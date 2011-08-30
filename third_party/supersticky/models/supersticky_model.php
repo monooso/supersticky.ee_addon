@@ -11,7 +11,7 @@
 
 class Supersticky_model extends CI_Model {
 
-    private $_ee;
+    private $EE;
     private $_namespace;
     private $_package_name;
     private $_package_version;
@@ -23,6 +23,27 @@ class Supersticky_model extends CI_Model {
      * ------------------------------------------------------------ */
     
     /**
+     * Returns an associative array containing layout tab information.
+     *
+     * @access  private
+     * @return  Array
+     */
+    private function _get_layout_tabs()
+    {
+        return array(
+            'supersticky' => array(
+                'supersticky_criteria' => array(
+                    'collapse'      => 'false',
+                    'htmlbuttons'   => 'false',
+                    'visible'       => 'true',
+                    'width'         => '100%'
+                )
+            )
+        );
+    }
+
+
+    /**
      * Returns a references to the package cache. Should be called
      * as follows: $cache =& $this->_get_package_cache();
      *
@@ -31,7 +52,7 @@ class Supersticky_model extends CI_Model {
      */
     private function &_get_package_cache()
     {
-        return $this->_ee->session->cache[$this->_namespace][$this->_package_name];
+        return $this->EE->session->cache[$this->_namespace][$this->_package_name];
     }
 
 
@@ -52,21 +73,21 @@ class Supersticky_model extends CI_Model {
     {
         parent::__construct();
 
-        $this->_ee              =& get_instance();
+        $this->EE               =& get_instance();
         $this->_namespace       = $namespace        ? strtolower($namespace)    : 'experience';
         $this->_package_name    = $package_name     ? strtolower($package_name) : 'supersticky';
         $this->_package_version = $package_version  ? $package_version          : '0.1.0';
  
 
         // Initialise the add-on cache.
-        if ( ! array_key_exists($this->_namespace, $this->_ee->session->cache))
+        if ( ! array_key_exists($this->_namespace, $this->EE->session->cache))
         {
-            $this->_ee->session->cache[$this->_namespace] = array();
+            $this->EE->session->cache[$this->_namespace] = array();
         }
 
-        if ( ! array_key_exists($this->_package_name, $this->_ee->session->cache[$this->_namespace]))
+        if ( ! array_key_exists($this->_package_name, $this->EE->session->cache[$this->_namespace]))
         {
-            $this->_ee->session->cache[$this->_namespace][$this->_package_name] = array();
+            $this->EE->session->cache[$this->_namespace][$this->_package_name] = array();
         }
     }
 
@@ -91,7 +112,7 @@ class Supersticky_model extends CI_Model {
      */
     public function get_package_theme_url()
     {
-        $theme_url = $this->_ee->config->item('theme_folder_url');
+        $theme_url = $this->EE->config->item('theme_folder_url');
         $theme_url .= substr($theme_url, -1) == '/' ? 'third_party/' : '/third_party/';
 
         return $theme_url .$this->get_package_name() .'/';
@@ -120,7 +141,7 @@ class Supersticky_model extends CI_Model {
     {
         if ( ! $this->_site_id)
         {
-            $this->_site_id = intval($this->_ee->config->item('site_id'));
+            $this->_site_id = intval($this->EE->config->item('site_id'));
         }
 
         return $this->_site_id;
@@ -137,6 +158,7 @@ class Supersticky_model extends CI_Model {
     {
         $this->install_module_register();
         $this->install_module_actions();
+        $this->install_module_tabs();
 
         return TRUE;
     }
@@ -151,7 +173,7 @@ class Supersticky_model extends CI_Model {
     public function install_module_actions()
     {
         
-        $this->_ee->db->insert('actions', array(
+        $this->EE->db->insert('actions', array(
             'class'     => ucfirst($this->get_package_name()),
             'method'    => ''
         ));
@@ -167,12 +189,26 @@ class Supersticky_model extends CI_Model {
      */
     public function install_module_register()
     {
-        $this->_ee->db->insert('modules', array(
+        $this->EE->db->insert('modules', array(
             'has_cp_backend'        => 'y',
-            'has_publish_fields'    => 'n',
+            'has_publish_fields'    => 'y',
             'module_name'           => ucfirst($this->get_package_name()),
             'module_version'        => $this->get_package_version()
         ));
+    }
+
+
+    /**
+     * Adds the layout tabs.
+     *
+     * @access  public
+     * @return  void
+     */
+    public function install_module_tabs()
+    {
+        // Add the layout tabs to any saved Publish Layouts.
+        $this->EE->load->library('layout');
+        $this->EE->layout->add_layout_tabs($this->_get_layout_tabs(), 'supersticky');
     }
 
 
@@ -187,7 +223,7 @@ class Supersticky_model extends CI_Model {
         $module_name = ucfirst($this->get_package_name());
 
         // Retrieve the module information.
-        $db_module = $this->_ee->db
+        $db_module = $this->EE->db
             ->select('module_id')
             ->get_where('modules', array('module_name' => $module_name), 1);
 
@@ -196,9 +232,13 @@ class Supersticky_model extends CI_Model {
             return FALSE;
         }
 
-        $this->_ee->db->delete('module_member_groups', array('module_id' => $db_module->row()->module_id));
-        $this->_ee->db->delete('modules', array('module_name' => $module_name));
-        $this->_ee->db->delete('actions', array('class' => $module_name));
+        $this->EE->db->delete('module_member_groups', array('module_id' => $db_module->row()->module_id));
+        $this->EE->db->delete('modules', array('module_name' => $module_name));
+        $this->EE->db->delete('actions', array('class' => $module_name));
+
+        // Delete the layout tabs from any saved Publish Layouts.
+        $this->EE->load->library('layout');
+        $this->EE->layout->delete_layout_tabs($this->_get_layout_tabs(), 'supersticky');
 
         return TRUE;
     }

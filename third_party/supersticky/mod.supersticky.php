@@ -3,7 +3,7 @@
 /**
  * SuperSticky module.
  *
- * @author          Stephen Lewis (http://github.com/experience/)
+ * @author          Stephen Lewis (http://experienceinternet.co.uk/)
  * @copyright       Experience Internet
  * @package         Supersticky
  */

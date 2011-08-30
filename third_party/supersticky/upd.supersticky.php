@@ -10,7 +10,7 @@
 
 class Supersticky_upd {
     
-    private $_ee;
+    private $EE;
     private $_model;
     public $version;
     
@@ -27,11 +27,11 @@ class Supersticky_upd {
      */
     public function __construct()
     {
-        $this->_ee =& get_instance();
-        $this->_ee->load->add_package_path(PATH_THIRD .'supersticky/');
+        $this->EE =& get_instance();
+        $this->EE->load->add_package_path(PATH_THIRD .'supersticky/');
 
-        $this->_ee->load->model('supersticky_model');
-        $this->_model = $this->_ee->supersticky_model;
+        $this->EE->load->model('supersticky_model');
+        $this->_model = $this->EE->supersticky_model;
         
         $this->version = $this->_model->get_package_version();
     }
