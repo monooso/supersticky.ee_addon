@@ -78,7 +78,7 @@ class Supersticky_tab {
             'field_required'        => 'n',
             'field_show_fmt'        => 'n',
             'field_text_direction'  => 'ltr',
-            'field_type'            => 'multi_select'
+            'field_type'            => 'supersticky'
         );
 
         return $settings;
