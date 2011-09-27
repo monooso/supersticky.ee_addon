@@ -71,7 +71,7 @@ class Supersticky_tab {
             'field_data'            => '',
             'field_fmt'             => '',
             'field_id'              => 'supersticky_criteria',
-            'field_instructions'    => 'SuperSticky instructions.',
+            'field_instructions'    => '',
             'field_label'           => 'SuperSticky',
             'field_list_items'      => '',
             'field_pre_populate'    => 'n',

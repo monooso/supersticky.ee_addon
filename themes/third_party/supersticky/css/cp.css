@@ -8,34 +8,65 @@
 
 @media screen {
 
-/* =input
+/* =forms
  * ------------------------------------------------------------ */
-#ei input[type='text'] {
-    width               : 97%;
+#supersticky_ft select {
+  width           : 97%;
 }
 
 
+/* =tables
+ * ------------------------------------------------------------ */
+#supersticky_ft table {
+  border          : 1px solid rgba(0, 0, 0, 0.15);
+  border-collapse : collapse;
+  width           : 100%;
+}
+
+#supersticky_ft td {
+  border-bottom   : 1px solid rgba(0, 0, 0, 0.15);
+  border-top      : 1px solid rgba(255, 255, 255, 0.75);
+  padding         : 10px;
+}
+
+#supersticky tr:first-child td {
+  border-top      : none;
+}
+
+
+/* --------------------------------------------------------------
+ * 'BUILDING BLOCK' CLASSES
+ * ------------------------------------------------------------ */
+
 /* =act
  * ------------------------------------------------------------ */
-#ei .act {
-    padding-right       : 7px;
-    text-align          : right;
-    white-space         : nowrap;
-    width               : 44px;
+#supersticky_ft .act {
+  padding-right   : 7px;
+  text-align      : right;
+  white-space     : nowrap;
+  width           : 44px;
 }
 
 
 /* =btn
  * ------------------------------------------------------------ */
-#ei .btn {
-    display             : inline-block;
-    margin-right        : 3px;
-    vertical-align      : middle;
+#supersticky_ft .btn {
+  display         : inline-block;
+  margin-right    : 3px;
+  vertical-align  : middle;
 }
 
-#ei .btn img {
-    display             : inline-block;
-    vertical-align      : middle;
+#supersticky_ft .btn img {
+  display         : inline-block;
+  vertical-align  : middle;
+}
+
+/* =date_picker
+ * ------------------------------------------------------------ */
+#supersticky_ft .date_picker {
+  display         : inline-block;
+  margin          : 0 5px;
+  width           : 35%;
 }
 
 

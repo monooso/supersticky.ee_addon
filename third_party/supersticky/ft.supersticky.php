@@ -54,6 +54,19 @@ class Supersticky_ft extends EE_Fieldtype {
    */
   public function display_field($saved_data)
   {
+    $this->EE->load->library('table');
+
+	  $theme_url	= $this->_model->get_package_theme_url();
+
+    $this->EE->cp->add_to_foot('<script src="' .$theme_url
+      .'js/libs/jquery.roland.js"></script>');
+
+    $this->EE->cp->add_to_foot('<script src="' .$theme_url
+      .'js/cp.js"></script>');
+
+    $this->EE->cp->add_to_head('<link rel="stylesheet" href="'
+      .$theme_url .'css/cp.css" />');
+
     return $this->EE->load->view('ft', array(), TRUE);
   }
   
