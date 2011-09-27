@@ -8,6 +8,8 @@
  * @package         Supersticky
  */
 
+// TRICKY: Need to manually require the EE_Fieldtype class.
+require_once PATH_FT .'EE_Fieldtype.php';
 require_once PATH_THIRD .'supersticky/ft.supersticky.php';
 require_once PATH_THIRD .'supersticky/tests/mocks/mock.supersticky_model.php';
 
