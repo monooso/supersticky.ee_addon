@@ -18,19 +18,27 @@
 /* =tables
  * ------------------------------------------------------------ */
 #supersticky_ft table {
+  -moz-border-radius    : 3px;
+  -webkit-border-radius : 3px;
   border          : 1px solid rgba(0, 0, 0, 0.15);
-  border-collapse : collapse;
+  border-radius   : 3px;
+  margin          : 10px 0;
   width           : 100%;
 }
 
 #supersticky_ft td {
-  border-bottom   : 1px solid rgba(0, 0, 0, 0.15);
-  border-top      : 1px solid rgba(255, 255, 255, 0.75);
+  border-top      : 1px solid rgba(0, 0, 0, 0.15);
   padding         : 10px;
+  text-align      : left;
+  vertical-align  : middle;
 }
 
-#supersticky tr:first-child td {
+#supersticky_ft tr:first-child td {
   border-top      : none;
+}
+
+#supersticky_ft tr:nth-child(even) td {
+  background      : rgba(255, 255, 255, 0.65);
 }
 
 
