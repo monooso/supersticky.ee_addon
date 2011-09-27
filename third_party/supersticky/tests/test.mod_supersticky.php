@@ -8,8 +8,8 @@
  * @package         Supersticky
  */
 
-require_once PATH_THIRD .'supersticky/mcp.supersticky' .EXT;
-require_once PATH_THIRD .'supersticky/tests/mocks/mock.supersticky_model' .EXT;
+require_once PATH_THIRD .'supersticky/mcp.supersticky.php';
+require_once PATH_THIRD .'supersticky/tests/mocks/mock.supersticky_model.php';
 
 class Test_supersticky extends Testee_unit_test_case {
 
@@ -31,8 +31,11 @@ class Test_supersticky extends Testee_unit_test_case {
     {
         parent::setUp();
 
-        Mock::generate('Mock_supersticky_model', get_class($this) .'_mock_model');
+        Mock::generate('Mock_supersticky_model',
+          get_class($this) .'_mock_model');
+
         $this->_ee->supersticky_model = $this->_get_mock('model');
+
         $this->_model   = $this->_ee->supersticky_model;
         $this->_subject = new Supersticky();
     }
