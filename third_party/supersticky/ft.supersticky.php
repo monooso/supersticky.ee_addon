@@ -54,7 +54,7 @@ class Supersticky_ft extends EE_Fieldtype {
    */
   public function display_field($saved_data)
   {
-    return '<p>SuperSticky Fieldtype</p>';
+    return $this->EE->load->view('ft', array(), TRUE);
   }
   
 

@@ -43,6 +43,19 @@ class Test_supersticky_ft extends Testee_unit_test_case {
     }
 
 
+    public function test__display_field__loads_view_correctly()
+    {
+      $data = FALSE;
+      $view_result = '<p>Display something.</p>';
+
+      $this->_ee->load->expectOnce('view', array('ft', array(), TRUE));
+      $this->_ee->load->setReturnValue('view', $view_result);
+
+      $this->assertIdentical(
+        $view_result, $this->_subject->display_field($data));
+    }
+
+
 }
 
 
