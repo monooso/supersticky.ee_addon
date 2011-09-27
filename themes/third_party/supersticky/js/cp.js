@@ -11,42 +11,62 @@
   $(document).ready(function() {
     var $wrapper = $('#supersticky_ft');
 
-    // Initialises Roland.
+    /**
+     * Initialises Roland.
+     *
+     * @access  private
+     * @return  void
+     */
     function iniRoland() {
       $wrapper.find('.roland')
         .roland()
         .find('.row').each(function() {
-          iniCriterion($(this));
+          var $iniRow = $(this);
+          
+          /**
+           * 'Criterion type' change handler. This is automatically
+           * copied to new rows, so there's no need to include it
+           * in the 'iniCriterion' function.
+           *
+           * Also, we _must not_ use $iniRow in the change handler, as
+           * it refers to the original row object.
+           *
+           * The previous two paragraphs; two hours of my life.
+           */
+
+          $iniRow.find('select[name$="[type]"]').change(function() {
+            var $row                  = $(this).closest('tr');
+            var criterionType         = this.value;
+            var criterionOptionsClass = '.ss_criterion_options_' + criterionType;
+            var $criterionOptions     = $row.find(criterionOptionsClass);
+
+            $criterionOptions
+              .fadeIn()
+              .siblings('.ss_criterion_options').hide();
+          });
+
+          // Same deal as the change handler.
+          $iniRow.find('.add_row').bind(
+            'preAddRow',
+            function(event, eventData) {
+              iniCriterion.apply(eventData.newRow[0]);
+              return eventData.newRow;
+            }
+          );
+
+          iniCriterion.apply($iniRow[0]);
         })
     }
 
 
-    // Initialises a single criterion.
-    function iniCriterion($row) {
-      $row.find('.ss_criterion_options').hide();
-
-      $row.find('.add_row').bind('preAddRow', function(event, eventData) {
-          iniCriterion(eventData.newRow);
-          return eventData.newRow;
-        });
-
-      /*
-      rgb = 'rgb(' + Math.round(Math.random() * 255) + ', '
-          + Math.round(Math.random() * 255) + ', '
-          + Math.round(Math.random() * 255) + ')';
-
-      $row.find('select[name$="[type]"]').css('border', '10px solid ' + rgb);
-      */
-
-      $row.find('select[name$="[type]"]').change(function() {
-        var criterionType         = this.value;
-        var criterionOptionsClass = '.ss_criterion_options_' + criterionType;
-        var $criterionOptions     = $row.find(criterionOptionsClass);
-
-        $criterionOptions
-          .fadeIn()
-          .siblings('.ss_criterion_options').hide();
-      });
+    /**
+     * Initialises a single criterion.
+     *
+     * @access  private
+     * @return  void
+     */
+    function iniCriterion() {
+      $(this).find('.ss_criterion_options').hide();
     }
 
 
