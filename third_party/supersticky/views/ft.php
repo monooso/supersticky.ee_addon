@@ -14,9 +14,13 @@
 
         <td>
           <div class="ss_criterion_options ss_criterion_options_date_range">
-            <input class="date_picker" name="supersticky_criteria[0][date_range_from]" type="text" />
+            <input class="date_picker"
+              id="supersticky_criteria[0][date_range_from]"
+              name="supersticky_criteria[0][date_range_from]" type="text" />
             and
-            <input class="date_picker" name="supersticky_criteria[0][date_range_to]" type="text" />
+            <input class="date_picker"
+              id="supersticky_criteria[0][date_range_to]"
+              name="supersticky_criteria[0][date_range_to]" type="text" />
           </div>
 
           <div class="ss_criterion_options ss_criterion_options_member_group">

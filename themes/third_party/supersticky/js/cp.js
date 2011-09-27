@@ -40,23 +40,32 @@
             var criterionOptionsClass = '.ss_criterion_options_' + criterionType;
             var $criterionOptions     = $row.find(criterionOptionsClass);
 
+            /**
+             * The jQuery UI DatePicker is a complete pain. Any attempts
+             * to initialise it when the row is created fail, as the
+             * date picker is _activated_ on the correct field, but then
+             * proceeds to _populate_ the original row.
+             */
+
+            $criterionOptions.find('.date_picker')
+              .datepicker('destroy')
+              .datepicker();
+
             $criterionOptions
               .fadeIn()
               .siblings('.ss_criterion_options').hide();
           });
 
           // Same deal as the change handler.
-          $iniRow.find('.add_row').bind(
-            'preAddRow',
-            function(event, eventData) {
+          $iniRow.find('.add_row')
+            .bind('preAddRow', function(event, eventData) {
               iniCriterion.apply(eventData.newRow[0]);
               return eventData.newRow;
-            }
-          );
+            });
 
           iniCriterion.apply($iniRow[0]);
-        })
-    }
+        });
+    };
 
 
     /**
@@ -66,8 +75,9 @@
      * @return  void
      */
     function iniCriterion() {
-      $(this).find('.ss_criterion_options').hide();
-    }
+      var $row = $(this);
+      $row.find('.ss_criterion_options').hide();
+    };
 
 
     // Superstar DJ, here we go...

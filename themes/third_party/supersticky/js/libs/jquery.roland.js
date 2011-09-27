@@ -1,7 +1,7 @@
 /**
  * Add and delete 'rows' to any container element.
  *
- * @author		Stephen Lewis (http://github.com/experience/)
+ * @author    Stephen Lewis (http://github.com/experience/)
  * @copyright   Experience Internet
  * @version     1.1.1
  */
@@ -95,9 +95,9 @@
 
     // Defaults.
     $.fn.roland.defaults = {
-        rowClass        : 'row',
-        addRowClass     : 'add_row',
-        removeRowClass  : 'remove_row'
+      rowClass        : 'row',
+      addRowClass     : 'add_row',
+      removeRowClass  : 'remove_row'
     };
 
 
@@ -106,25 +106,35 @@
      * -----------------------------------------*/
 
     // Updates the indexes of any form elements.
-	function updateIndexes($container, opts) {
-		$container.find('.' + opts.rowClass).each(function(rowCount) {
-			regex = /^([a-z_]+)\[(?:[0-9]+)\]\[([a-z_]+)\]$/;
+    function updateIndexes($container, opts) {
+      $container.find('.' + opts.rowClass).each(function(rowCount) {
+        regex = /^([a-z_]+)\[(?:[0-9]+)\]\[([a-z_]+)\]$/;
 
-			$(this).find('input, select, textarea').each(function(fieldCount) {
-				var fieldName	= $(this).attr('name');
-				fieldName	= fieldName.replace(regex, '$1[' + rowCount + '][$2]');
-				$(this).attr('name', fieldName);
-			});
+        $(this).find('input, select, textarea').each(function(fieldCount) {
+          $field = $(this);
 
-		});
-	};
+          if ($field.attr('id')) {
+            $field.attr('id',
+              $field.attr('id').replace(regex, '$1[' + rowCount + '][$2]'));
+          }
+
+          var fieldName = $(this).attr('name');
+
+          if (fieldName) {
+            fieldName = fieldName.replace(regex, '$1[' + rowCount + '][$2]');
+            $(this).attr('name', fieldName);
+          }
+        });
+      });
+    };
 
     // Updates the navigation buttons.
-	function updateNav($container, opts) {
-		var $remove = $container.find('.' + opts.removeRowClass);
-		var $rows	= $container.find('.' + opts.rowClass);
-        $rows.size() == 1 ? $remove.hide() : $remove.show();
-	};
+    function updateNav($container, opts) {
+      var $remove = $container.find('.' + opts.removeRowClass);
+      var $rows = $container.find('.' + opts.rowClass);
+      $rows.size() == 1 ? $remove.hide() : $remove.show();
+    };
+
 
 })(jQuery);
 
