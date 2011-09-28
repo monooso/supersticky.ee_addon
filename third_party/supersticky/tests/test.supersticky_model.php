@@ -123,6 +123,123 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
+  public function test__save_supersticky_entry__entry_saved()
+  {
+    // Create the dummy entry.
+    $criteria = array(
+      new Supersticky_criterion(array(
+        'type'  => Supersticky_criterion::TYPE_DATE_RANGE,
+        'value' => '2011-01-01T00:00:01+0:00 2011-12-31T23:59:59+0:00'
+      )),
+      new Supersticky_criterion(array(
+        'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
+        'value' => 999
+      ))
+    );
+
+    $entry_id = 123;
+
+    $entry = new Supersticky_entry(array(
+      'entry_id' => $entry_id,
+      'criteria' => $criteria
+    ));
+
+    // Build the expected insert data.
+    $insert_criteria = array();
+
+    foreach ($criteria AS $criterion)
+    {
+      $insert_criteria[] = $criterion->to_array();
+    }
+
+    $insert_data = array(
+      'entry_id' => $entry_id,
+      'supersticky_criteria' => json_encode($insert_criteria)
+    );
+
+    // What we expect to happen.
+    $this->_ee->db->expectOnce('delete', array(
+      'supersticky_entries',
+      array('entry_id' => $entry_id)
+    ));
+
+    $this->_ee->db->expectOnce('insert', array(
+      'supersticky_entries', $insert_data));
+  
+    $this->assertIdentical(TRUE,
+      $this->_subject->save_supersticky_entry($entry));
+  }
+
+
+  public function test__save_supersticky_entry__fails_when_missing_entry_id()
+  {
+    // Create the dummy entry.
+    $criteria = array(
+      new Supersticky_criterion(array(
+        'type'  => Supersticky_criterion::TYPE_DATE_RANGE,
+        'value' => '2011-01-01T00:00:01+0:00 2011-12-31T23:59:59+0:00'
+      )),
+      new Supersticky_criterion(array(
+        'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
+        'value' => 999
+      ))
+    );
+
+    $entry = new Supersticky_entry(array('criteria' => $criteria));
+
+    // What we expect to happen.
+    $this->_ee->db->expectNever('delete');
+    $this->_ee->db->expectNever('insert');
+  
+    $this->assertIdentical(FALSE,
+      $this->_subject->save_supersticky_entry($entry));
+  }
+
+
+  public function test__save_supersticky_entry__fails_with_invalid_criterion()
+  {
+    // Create the dummy entry.
+    $criteria = array(
+      new Supersticky_criterion(array(
+        'type'  => Supersticky_criterion::TYPE_DATE_RANGE,
+        'value' => '2011-01-01T00:00:01+0:00 2011-12-31T23:59:59+0:00'
+      )),
+      new Supersticky_criterion(array('value' => 999))
+    );
+
+    $entry_id = 123;
+
+    $entry = new Supersticky_entry(array(
+      'criteria' => $criteria,
+      'entry_id' => $entry_id
+    ));
+
+    // What we expect to happen.
+    $this->_ee->db->expectNever('delete');
+    $this->_ee->db->expectNever('insert');
+  
+    $this->assertIdentical(FALSE,
+      $this->_subject->save_supersticky_entry($entry));
+  }
+
+
+  public function test__save_supersticky_entry__fails_with_no_criteria()
+  {
+    // Create the dummy entry.
+    $entry = new Supersticky_entry(array(
+      'criteria' => array(),
+      'entry_id' => 123
+    ));
+
+    // What we expect to happen.
+    $this->_ee->db->expectNever('delete');
+    $this->_ee->db->expectNever('insert');
+  
+    $this->assertIdentical(FALSE,
+      $this->_subject->save_supersticky_entry($entry));
+  }
+
+
   public function test__uninstall_module__success()
   {
     $db_module_result           = $this->_get_mock('db_query');

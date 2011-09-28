@@ -9,6 +9,8 @@
  * @version         0.1.0
  */
 
+require_once PATH_THIRD .'supersticky/classes/supersticky_entry.php';
+
 class Supersticky_model extends CI_Model {
 
   private $EE;
@@ -250,6 +252,46 @@ class Supersticky_model extends CI_Model {
     $this->EE->load->library('layout');
     $this->EE->layout->add_layout_tabs($this->_get_layout_tabs(),
       'supersticky');
+  }
+
+
+  /**
+   * Saves the supplied SuperSticky Entry to the database. Overwrites
+   * any existing SuperSticky Entries with the same entry ID.
+   *
+   * @access  public
+   * @param   Supersticky_entry     $entry    The entry to save.
+   * @return  bool
+   */
+  public function save_supersticky_entry(Supersticky_entry $entry)
+  {
+    // Can't do anything without an entry ID or criteria.
+    if ( ! $entry->get_entry_id()
+      OR ! ($criteria = $entry->get_criteria())
+    )
+    {
+      return FALSE;
+    }
+
+    // We won't stand for any half-arsed criteria.
+    foreach ($criteria AS $criterion)
+    {
+      if ( ! $criterion->get_type() OR ! $criterion->get_value())
+      {
+        return FALSE;
+      }
+    }
+
+    $this->EE->db->delete('supersticky_entries',
+      array('entry_id' => $entry->get_entry_id()));
+
+    $insert_data = $entry->to_array();
+    $insert_data['supersticky_criteria'] = json_encode($insert_data['criteria']);
+    unset($insert_data['criteria']);
+
+    $this->EE->db->insert('supersticky_entries', $insert_data);
+
+    return TRUE;
   }
 
 
