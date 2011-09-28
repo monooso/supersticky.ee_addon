@@ -166,6 +166,54 @@ class Supersticky_model extends CI_Model {
 
 
   /**
+   * Retrieves a SuperSticky Entry, given the entry ID.
+   *
+   * @access  public
+   * @param   int|string      $entry_id     The entry ID.
+   * @return  Supersticky_entry|FALSE
+   */
+  public function get_supersticky_entry_by_id($entry_id)
+  {
+    // Get out early.
+    if ( ! valid_int($entry_id, 1))
+    {
+      return FALSE;
+    }
+
+    $db_result = $this->EE->db
+      ->select('entry_id, supersticky_criteria')
+      ->get_where('supersticky_entries', array('entry_id' => $entry_id), 1);
+
+    if ($db_result->num_rows() !== 1)
+    {
+      return FALSE;
+    }
+
+    $entry_id     = $db_result->row()->entry_id;
+    $raw_criteria = json_decode($db_result->row()->supersticky_criteria);
+    $criteria     = array();
+
+    // This should never happen, but just in case...
+    if ( ! is_array($raw_criteria))
+    {
+      return FALSE;
+    }
+
+    foreach ($raw_criteria AS $criterion_data)
+    {
+      $criteria[] = new Supersticky_criterion((array) $criterion_data);
+    }
+
+    $result = new Supersticky_entry(array(
+      'entry_id' => $db_result->row()->entry_id,
+      'criteria' => $criteria
+    ));
+
+    return $result;
+  }
+
+
+  /**
    * Installs the module.
    *
    * @access  public
