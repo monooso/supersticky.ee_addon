@@ -26,7 +26,7 @@ class Supersticky_criterion {
    * Constructor.
    *
    * @access  public
-   * @param   array       $properties         An associative array of instance properties. Optional.
+   * @param   array     $properties     Associative array of properties.
    * @return  void
    */
   public function __construct(Array $properties = array())
