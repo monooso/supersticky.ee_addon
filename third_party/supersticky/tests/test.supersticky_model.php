@@ -130,24 +130,37 @@ class Test_supersticky_model extends Testee_unit_test_case {
     $db_module_row->module_id   = '10';
     $module_name                = ucfirst($this->_package_name);
 
+    // Retrieve the module information.
     $this->_ee->db->expectOnce('select', array('module_id'));
-
     $this->_ee->db->expectOnce('get_where', array('modules',
       array('module_name' => $module_name), 1));
-
-    $this->_ee->db->expectCallCount('delete', 3);
-    $this->_ee->db->expectAt(0, 'delete', array('module_member_groups',
-      array('module_id' => $db_module_row->module_id)));
-
-    $this->_ee->db->expectAt(1, 'delete', array('modules',
-      array('module_name' => $module_name)));
-
-    $this->_ee->db->expectAt(2, 'delete', array('actions',
-      array('class' => $module_name)));
 
     $this->_ee->db->setReturnReference('get_where', $db_module_result);
     $db_module_result->setReturnValue('num_rows', 1);
     $db_module_result->setReturnValue('row', $db_module_row);
+
+    // Delete all traces of the module...
+    $this->_ee->db->expectCallCount('delete', 3);
+
+    // Delete the module member groups.
+    $this->_ee->db->expectAt(0, 'delete', array('module_member_groups',
+      array('module_id' => $db_module_row->module_id)));
+
+    // Delete the module actions.
+    $this->_ee->db->expectAt(1, 'delete', array('actions',
+      array('class' => $module_name)));
+
+    // Delete the module.
+    $this->_ee->db->expectAt(2, 'delete', array('modules',
+      array('module_name' => $module_name)));
+
+    // Drop the module tables.
+    $this->_ee->load->expectOnce('dbforge');
+    $this->_ee->dbforge->expectOnce('drop_table', array('supersticky_entries'));
+
+    // Delete any saved layout tabs.
+    $this->_ee->load->expectOnce('library', array('layout'));
+    $this->_ee->layout->expectOnce('delete_layout_tabs');
 
     $this->assertIdentical(TRUE, $this->_subject->uninstall_module());
   }
@@ -160,6 +173,8 @@ class Test_supersticky_model extends Testee_unit_test_case {
     $this->_ee->db->expectOnce('select');
     $this->_ee->db->expectOnce('get_where');
     $this->_ee->db->expectNever('delete');
+    $this->_ee->load->expectNever('dbforge');
+    $this->_ee->load->expectNever('library');
 
     $this->_ee->db->setReturnReference('get_where', $db_module_result);
     $db_module_result->setReturnValue('num_rows', 0);

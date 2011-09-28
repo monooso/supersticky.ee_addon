@@ -273,11 +273,16 @@ class Supersticky_model extends CI_Model {
       return FALSE;
     }
 
+    // Delete all traces of the module from the EE DB tables.
     $this->EE->db->delete('module_member_groups',
       array('module_id' => $db_module->row()->module_id));
 
-    $this->EE->db->delete('modules', array('module_name' => $module_name));
     $this->EE->db->delete('actions', array('class' => $module_name));
+    $this->EE->db->delete('modules', array('module_name' => $module_name));
+
+    // Drop the SuperSticky database table.
+    $this->EE->load->dbforge();
+    $this->EE->dbforge->drop_table('supersticky_entries');
 
     // Delete the layout tabs from any saved Publish Layouts.
     $this->EE->load->library('layout');
