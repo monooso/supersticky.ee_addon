@@ -173,6 +173,7 @@ class Supersticky_model extends CI_Model {
   {
     $this->install_module_register();
     $this->install_module_actions();
+    $this->install_module_tables();
     $this->install_module_tabs();
 
     return TRUE;
@@ -208,6 +209,33 @@ class Supersticky_model extends CI_Model {
       'module_name'         => ucfirst($this->get_package_name()),
       'module_version'      => $this->get_package_version()
     ));
+  }
+
+
+  /**
+   * Creates the module tables in the database.
+   *
+   * @access  public
+   * @return  void
+   */
+  public function install_module_tables()
+  {
+    $this->EE->load->dbforge();
+
+    $fields = array(
+      'entry_id' => array(
+        'constraint'  => 10,
+        'type'        => 'INT',
+        'unsigned'    => TRUE
+      ),
+      'supersticky_criteria' => array(
+        'type'        => 'TEXT'
+      )
+    );
+
+    $this->EE->dbforge->add_field($fields);
+    $this->EE->dbforge->add_key('entry_id', TRUE);
+    $this->EE->dbforge->create_table('supersticky_entries', TRUE);
   }
 
 

@@ -65,20 +65,6 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
-  public function test__install_module_register__success()
-  {
-    $query_data = array(
-      'has_cp_backend'        => 'y',
-      'has_publish_fields'    => 'n',
-      'module_name'           => ucfirst($this->_package_name),
-      'module_version'        => $this->_package_version
-    );
-
-    $this->_ee->db->expectOnce('insert', array('modules', $query_data));
-    $this->_subject->install_module_register();
-  }
-
-
   public function test__install_module_actions__success()
   {
     $query_data = array(
@@ -95,6 +81,45 @@ class Test_supersticky_model extends Testee_unit_test_case {
     }
 
     $this->_subject->install_module_actions();
+  }
+
+
+  public function test__install_module_register__success()
+  {
+    $query_data = array(
+      'has_cp_backend'        => 'y',
+      'has_publish_fields'    => 'y',
+      'module_name'           => ucfirst($this->_package_name),
+      'module_version'        => $this->_package_version
+    );
+
+    $this->_ee->db->expectOnce('insert', array('modules', $query_data));
+    $this->_subject->install_module_register();
+  }
+
+
+  public function test__install_module_tables__success()
+  {
+    $this->_ee->load->expectOnce('dbforge');
+
+    $fields = array(
+      'entry_id' => array(
+        'constraint'  => 10,
+        'type'        => 'INT',
+        'unsigned'    => TRUE
+      ),
+      'supersticky_criteria' => array(
+        'type'        => 'TEXT'
+      )
+    );
+
+    $this->_ee->dbforge->expectOnce('add_field', array($fields));
+    $this->_ee->dbforge->expectOnce('add_key', array('entry_id', TRUE));
+
+    $this->_ee->dbforge->expectOnce('create_table',
+      array('supersticky_entries', TRUE));
+  
+    $this->_subject->install_module_tables();
   }
 
 
