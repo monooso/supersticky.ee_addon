@@ -49,7 +49,11 @@
 
             $criterionOptions.find('.date_picker')
               .datepicker('destroy')
-              .datepicker();
+              .datepicker({
+                changeMonth     : true,
+                defaultDate     : '+1w',
+                numberOfMonths  : 3
+              });
 
             $criterionOptions
               .fadeIn()
