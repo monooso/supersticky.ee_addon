@@ -101,12 +101,8 @@ class Supersticky_tab {
     $lang = $this->EE->lang;
     $lang->loadfile($this->_model->get_package_name());
 
-    $field_data = $entry_id
-      ? $this->_model->get_supersticky_entry_by_id($entry_id)
-      : FALSE;
-
     $settings[] = array(
-      'field_data'            => $field_data,
+      'field_data'            => $entry_id,   // Passed to the fieldtype.
       'field_fmt'             => '',
       'field_id'              => 'supersticky_criteria',
       'field_instructions'    => $lang->line('supersticky_field_instructions'),

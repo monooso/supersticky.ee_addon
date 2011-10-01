@@ -137,8 +137,6 @@ class Test_supersticky_tab extends Testee_unit_test_case {
       $field_instructions = 'Field instructions.';
       $field_label        = 'Field Label';
 
-      $this->_model->expectNever('get_supersticky_entry_by_id');
-
       $lang->setReturnValue('line', $field_instructions,
         array('supersticky_field_instructions'));
 
@@ -179,13 +177,6 @@ class Test_supersticky_tab extends Testee_unit_test_case {
       $field_instructions = 'Field instructions.';
       $field_label        = 'Field Label';
 
-      $entry = new Supersticky_entry(array('entry_id' => $entry_id));
-
-      $this->_model->expectOnce('get_supersticky_entry_by_id',
-        array($entry_id));
-
-      $this->_model->setReturnValue('get_supersticky_entry_by_id', $entry);
-
       $lang->expectCallCount('line', 2);
 
       $lang->setReturnValue('line', $field_instructions,
@@ -196,7 +187,7 @@ class Test_supersticky_tab extends Testee_unit_test_case {
 
       $expected_result = array(
         array(
-          'field_data'          => $entry,
+          'field_data'          => $entry_id,
           'field_fmt'           => '',
           'field_id'            => 'supersticky_criteria',
           'field_instructions'  => $field_instructions,
