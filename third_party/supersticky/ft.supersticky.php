@@ -56,8 +56,9 @@ class Supersticky_ft extends EE_Fieldtype {
    */
   public function display_field($saved_data)
   {
-    $this->EE->load->library('table');
+    $this->EE->load->helper('form');
 
+    $lang       = $this->EE->lang;
 	  $theme_url	= $this->_model->get_package_theme_url();
 
     $this->EE->cp->add_to_foot('<script src="' .$theme_url
@@ -69,7 +70,35 @@ class Supersticky_ft extends EE_Fieldtype {
     $this->EE->cp->add_to_head('<link rel="stylesheet" href="'
       .$theme_url .'css/cp.css" />');
 
-    return $this->EE->load->view('ft', array(), TRUE);
+    // Construct the view variables.
+    $entry = valid_int($saved_data, 1)
+      ? $this->_model->get_supersticky_entry_by_id($saved_data)
+      : FALSE;
+
+    $criterion_types = array(
+      '' => $lang->line('lbl__criterion_type'),
+      Supersticky_criterion::TYPE_DATE_RANGE
+        => $lang->line('lbl__' .Supersticky_criterion::TYPE_DATE_RANGE),
+      Supersticky_criterion::TYPE_MEMBER_GROUP
+        => $lang->line('lbl__' .Supersticky_criterion::TYPE_MEMBER_GROUP)
+    );
+
+    $member_groups = array(
+      '0' => 'Select a member group&hellip;',
+      '1' => 'SuperAdmin',
+      '2' => 'Pending',
+      '3' => 'Banned',
+      '4' => 'Members',
+      '5' => 'Custom Member Group'
+    );
+
+    $view_vars = array(
+      'criterion_types' => $criterion_types,
+      'entry'           => $entry,
+      'member_groups'   => $member_groups
+    );
+
+    return $this->EE->load->view('ft', $view_vars, TRUE);
   }
 
 

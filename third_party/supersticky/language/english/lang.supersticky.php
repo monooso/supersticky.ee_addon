@@ -32,6 +32,14 @@ $lang = array(
 'supersticky_field_label'         => 'SuperSticky Criteria',
 
 
+/* --------------------------------------------------------------
+ * FIELDTYPE
+ * ------------------------------------------------------------ */
+'lbl__criterion_type'   => 'Select criterion type&hellip;',
+'lbl__date_range'       => 'Date is between',
+'lbl__member_group'     => 'Visitor&rsquo;s member group is',
+
+
 // All done.
 '' => ''
 
