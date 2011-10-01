@@ -40,6 +40,8 @@
             var criterionOptionsClass = '.ss_criterion_options_' + criterionType;
             var $criterionOptions     = $row.find(criterionOptionsClass);
 
+            iniCriterion.apply($iniRow[0]);
+
             /**
              * The jQuery UI DatePicker is a complete pain. Any attempts
              * to initialise it when the row is created fail, as the
@@ -47,7 +49,7 @@
              * proceeds to _populate_ the original row.
              */
 
-            $criterionOptions.find('.date_picker')
+            $criterionOptions.find('id$="[date_range_from]", id$="[date_range_to]"')
               .datepicker('destroy')
               .datepicker({
                 changeMonth     : true,
@@ -58,7 +60,7 @@
             $criterionOptions
               .fadeIn()
               .siblings('.ss_criterion_options').hide();
-          });
+          }).change();
 
           // Same deal as the change handler.
           $iniRow.find('.add_row')
@@ -66,8 +68,6 @@
               iniCriterion.apply(eventData.newRow[0]);
               return eventData.newRow;
             });
-
-          iniCriterion.apply($iniRow[0]);
         });
     };
 
