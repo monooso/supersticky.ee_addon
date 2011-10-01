@@ -454,6 +454,165 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
+  public function test__update_supersticky_entry_with_post_data__updates_criteria()
+  {
+    $in = $this->_ee->input;
+
+    $entry_id = 100;
+
+    $criteria = array(
+      new Supersticky_criterion(array(
+        'type' => Supersticky_criterion::TYPE_DATE_RANGE,
+        'date_range' => '2011-01-01T00:00:01+0:00 2011-12-31T23:59:59+0:00'
+      ))
+    );
+
+    $in_criteria = array(
+      array(
+        'type' => Supersticky_criterion::TYPE_MEMBER_GROUP,
+        'member_group' => '11'
+      )
+    );
+
+    $entry = new Supersticky_entry(array(
+      'criteria' => $criteria,
+      'entry_id' => $entry_id
+    ));
+
+    // POST data.
+    $in->expectOnce('post', array('supersticky_criteria'));
+    $in->setReturnValue('post', $in_criteria, array('supersticky_criteria'));
+
+    $expected_result = array(
+      'criteria' => array(
+        array(
+          'type'  => $criteria[0]->get_type(),
+          'value' => $criteria[0]->get_value()
+        ),
+        array(
+          'type'  => $in_criteria[0]['type'],
+          'value' => $in_criteria[0]['member_group']
+        )
+      ),
+      'entry_id' => $entry_id
+    );
+  
+    $actual_result
+      = $this->_subject->update_supersticky_entry_with_post_data($entry);
+
+    $actual_result = $actual_result->to_array();
+    ksort($actual_result);
+
+    $this->assertIdentical($expected_result, $actual_result);
+  }
+
+
+  public function test__update_supersticky_entry_with_post_data__copes_with_invalid_criteria()
+  {
+    $in = $this->_ee->input;
+    $in_criteria = 'This should be an array.';
+    $entry = new Supersticky_entry(array('entry_id' => 100));
+
+    $in->expectOnce('post', array('supersticky_criteria'));
+    $in->setReturnValue('post', $in_criteria, array('supersticky_criteria'));
+  
+    $actual_result
+      = $this->_subject->update_supersticky_entry_with_post_data($entry);
+
+    $expected_result = $entry->to_array();
+    $actual_result = $actual_result->to_array();
+
+    ksort($actual_result);
+    ksort($expected_result);
+
+    $this->assertIdentical($expected_result, $actual_result);
+  }
+
+
+  public function test__update_supersticky_entry_with_post_data__copes_with_invalid_criterion()
+  {
+    $in = $this->_ee->input;
+    $in_criteria = array(999, TRUE, 'These should be arrays');
+    $entry = new Supersticky_entry(array('entry_id' => 100));
+
+    $in->expectOnce('post', array('supersticky_criteria'));
+    $in->setReturnValue('post', $in_criteria, array('supersticky_criteria'));
+  
+    $actual_result
+      = $this->_subject->update_supersticky_entry_with_post_data($entry);
+
+    $expected_result = $entry->to_array();
+    $actual_result = $actual_result->to_array();
+
+    ksort($actual_result);
+    ksort($expected_result);
+
+    $this->assertIdentical($expected_result, $actual_result);
+  }
+
+
+  public function test__update_supersticky_entry_with_post_data__copes_with_missing_criterion_data()
+  {
+    $in = $this->_ee->input;
+
+    $in_criteria = array(
+      array('member_group' => '100'),
+      array(
+        'type' => Supersticky_criterion::TYPE_DATE_RANGE
+      ),
+      array(
+        'type' => Supersticky_criterion::TYPE_MEMBER_GROUP
+      ),
+      array(
+        'type' => Supersticky_criterion::TYPE_DATE_RANGE,
+        'date_range' => ''
+      ),
+      array(
+        'type' => Supersticky_criterion::TYPE_MEMBER_GROUP,
+        'member_group' => ''
+      )
+    );
+
+    $entry = new Supersticky_entry(array('entry_id' => 100));
+
+    $in->expectOnce('post', array('supersticky_criteria'));
+    $in->setReturnValue('post', $in_criteria, array('supersticky_criteria'));
+  
+    $actual_result
+      = $this->_subject->update_supersticky_entry_with_post_data($entry);
+
+    $expected_result = $entry->to_array();
+    $actual_result = $actual_result->to_array();
+
+    ksort($actual_result);
+    ksort($expected_result);
+
+    $this->assertIdentical($expected_result, $actual_result);
+  }
+
+
+  public function test__update_supersticky_entry_with_post_data__copes_with_invalid_type()
+  {
+    $in = $this->_ee->input;
+    $in_criteria = array(array( 'type' => 'Wibble'));
+    $entry = new Supersticky_entry(array('entry_id' => 100));
+
+    $in->expectOnce('post', array('supersticky_criteria'));
+    $in->setReturnValue('post', $in_criteria, array('supersticky_criteria'));
+  
+    $actual_result
+      = $this->_subject->update_supersticky_entry_with_post_data($entry);
+
+    $expected_result = $entry->to_array();
+    $actual_result = $actual_result->to_array();
+
+    ksort($actual_result);
+    ksort($expected_result);
+
+    $this->assertIdentical($expected_result, $actual_result);
+  }
+
+
 }
 
 

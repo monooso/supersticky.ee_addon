@@ -401,6 +401,71 @@ class Supersticky_model extends CI_Model {
   }
 
 
+  /**
+   * Updates a SuperSticky Entry with any POST data.
+   *
+   * @access  public
+   * @param   Supersticky_entry     $entry    The SuperSticky Entry.
+   * @return  Supersticky_entry
+   */
+  public function update_supersticky_entry_with_post_data(
+    Supersticky_entry $entry
+  )
+  {
+    $in = $this->EE->input;
+    $new_entry = clone $entry;   // Don't touch the original.
+
+    // Retrieve the POST data.
+    if ( ! is_array(($in_criteria = $in->post('supersticky_criteria'))))
+    {
+      return $new_entry;
+    }
+
+    foreach ($in_criteria AS $in_criterion)
+    {
+      if ( ! is_array($in_criterion)
+        OR ! array_key_exists('type', $in_criterion)
+      )
+      {
+        continue;
+      }
+
+      switch ($in_criterion['type'])
+      {
+        case Supersticky_criterion::TYPE_DATE_RANGE:
+          $in_value = array_key_exists('date_range', $in_criterion)
+            ? $in_criterion['date_range']
+            : '';
+
+          break;
+
+        case Supersticky_criterion::TYPE_MEMBER_GROUP:
+          $in_value = array_key_exists('member_group', $in_criterion)
+            ? $in_criterion['member_group']
+            : '';
+
+          break;
+
+        default:
+          $in_value = '';
+          break;
+      }
+
+      if ( ! $in_value)
+      {
+        continue;
+      }
+
+      $new_entry->add_criterion(new Supersticky_criterion(array(
+        'type'  => $in_criterion['type'],
+        'value' => $in_value
+      )));
+    }
+
+    return $new_entry;
+  }
+
+
 }
 
 
