@@ -49,17 +49,37 @@
              * proceeds to _populate_ the original row.
              */
 
-            $criterionOptions.find('id$="[date_range_from]", id$="[date_range_to]"')
+            var $datePickers = $criterionOptions
+              .find('[id$="[date_range_from]"], [id$="[date_range_to]"]')
               .datepicker('destroy')
               .datepicker({
                 changeMonth     : true,
+                dateFormat      : 'yy-mm-dd',
                 defaultDate     : '+1w',
-                numberOfMonths  : 3
+                numberOfMonths  : 2,
+                onSelect        : function(selectedDate) {
+                  // Ensure that the end date cannot be before the
+                  // start date, and vice-versa.
+                  var option = this.id.match(/\[date_range_from\]$/)
+                    ? 'minDate' : 'maxDate';
+
+                  var instance = $(this).data('datepicker');
+
+                  var date = $.datepicker.parseDate(
+                    instance.settings.dateFormat || $.datepicker._defaults.dateFormat,
+                    selectedDate,
+                    instance.settings
+                  );
+
+                  $datePickers.not(this).datepicker('option', option, date);
+                },
+                showAnim        : 'fadeIn'
               });
 
             $criterionOptions
               .fadeIn()
               .siblings('.ss_criterion_options').hide();
+
           }).change();
 
           // Same deal as the change handler.
