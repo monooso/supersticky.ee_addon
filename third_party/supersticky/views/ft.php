@@ -1,5 +1,4 @@
 <div id="supersticky_ft">
-  <p>Make this entry sticky for <em>any</em> of the following:</p>
 
   <table border="0" cellpadding="0" cellspacing="0">
     <tbody class="roland">
