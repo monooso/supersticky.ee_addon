@@ -114,8 +114,8 @@ class Supersticky_model extends CI_Model {
 
 
   /**
-   * Returns an associative array of criterion type 'options', for use
-   * in a form dropdown.
+   * Returns an associative array of criterion type 'options', suitable
+   * for use with the 'form_dropdown' form helper method.
    *
    * @access  public
    * @return  Array
@@ -131,6 +131,31 @@ class Supersticky_model extends CI_Model {
       Supersticky_criterion::TYPE_MEMBER_GROUP
         => $lang->line('lbl__' .Supersticky_criterion::TYPE_MEMBER_GROUP)
     );
+  }
+
+
+  /**
+   * Returns an associative array of member groups, suitable for use
+   * with the 'form_dropdown' form helper method.
+   *
+   * @access  public
+   * @return  Array
+   */
+  public function get_member_group_options()
+  {
+    $db_groups = $this->EE->db
+      ->select('group_id, group_title')
+      ->get_where('member_groups',
+          array('site_id' => $this->get_site_id()));
+
+    $member_groups = array();
+
+    foreach ($db_groups->row_array() AS $db_group)
+    {
+      $member_groups[$db_group['group_id']] = $db_group['group_title'];
+    }
+
+    return $member_groups;
   }
 
 

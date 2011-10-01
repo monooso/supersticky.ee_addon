@@ -75,27 +75,10 @@ class Supersticky_ft extends EE_Fieldtype {
       ? $this->_model->get_supersticky_entry_by_id($saved_data)
       : FALSE;
 
-    $criterion_types = array(
-      '' => $lang->line('lbl__criterion_type'),
-      Supersticky_criterion::TYPE_DATE_RANGE
-        => $lang->line('lbl__' .Supersticky_criterion::TYPE_DATE_RANGE),
-      Supersticky_criterion::TYPE_MEMBER_GROUP
-        => $lang->line('lbl__' .Supersticky_criterion::TYPE_MEMBER_GROUP)
-    );
-
-    $member_groups = array(
-      '0' => 'Select a member group&hellip;',
-      '1' => 'SuperAdmin',
-      '2' => 'Pending',
-      '3' => 'Banned',
-      '4' => 'Members',
-      '5' => 'Custom Member Group'
-    );
-
     $view_vars = array(
-      'criterion_types' => $criterion_types,
+      'criterion_types' => $this->_model->get_criterion_type_options(),
       'entry'           => $entry,
-      'member_groups'   => $member_groups
+      'member_groups'   => $this->_model->get_member_group_options()
     );
 
     return $this->EE->load->view('ft', $view_vars, TRUE);

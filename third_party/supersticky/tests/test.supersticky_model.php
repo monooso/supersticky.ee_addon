@@ -84,6 +84,66 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
+  public function test__get_member_group_options__returns_member_groups()
+  {
+    $db         = $this->_ee->db;
+    $db_result  = $this->_get_mock('db_query');
+
+    $db_rows = array(
+      array('group_id' => '1', 'group_title' => 'Super Admins'),
+      array('group_id' => '2', 'group_title' => 'Banned'),
+      array('group_id' => '3', 'group_title' => 'Guests'),
+      array('group_id' => '4', 'group_title' => 'Pending'),
+      array('group_id' => '5', 'group_title' => 'Members'),
+      array('group_id' => '6', 'group_title' => 'Custom Member Group')
+    );
+
+    // Query the database.
+    $db->expectOnce('select', array('group_id, group_title'));
+    $db->expectOnce('get_where', array('member_groups',
+      array('site_id' => $this->_site_id)));
+
+    $db->setReturnReference('get_where', $db_result);
+
+    $db_result->expectOnce('row_array');
+    $db_result->setReturnValue('row_array', $db_rows);
+
+    $expected_result = array();
+
+    foreach ($db_rows AS $db_row)
+    {
+      $expected_result[$db_row['group_id']] = $db_row['group_title'];
+    }
+  
+    $this->assertIdentical(
+      $expected_result,
+      $this->_subject->get_member_group_options()
+    );
+  }
+
+
+  public function test__get_member_group_options__handles_no_member_groups()
+  {
+    $db         = $this->_ee->db;
+    $db_result  = $this->_get_mock('db_query');
+
+    // Query the database.
+    $db->expectOnce('select', array('group_id, group_title'));
+    $db->expectOnce('get_where', array('member_groups',
+      array('site_id' => $this->_site_id)));
+
+    $db->setReturnReference('get_where', $db_result);
+
+    $db_result->expectOnce('row_array');
+    $db_result->setReturnValue('row_array', array());
+
+    $this->assertIdentical(
+      array(),
+      $this->_subject->get_member_group_options()
+    );
+  }
+
+
   public function test__get_site_id__success()
   {
     $this->_ee->config->expectOnce('item', array('site_id'));

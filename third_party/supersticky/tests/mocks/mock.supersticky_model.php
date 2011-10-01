@@ -11,6 +11,7 @@
 class Mock_supersticky_model {
 
   public function get_criterion_type_options() {}
+  public function get_member_group_options() {}
   public function get_package_name() {}
   public function get_package_theme_url() {}
   public function get_package_version() {}
