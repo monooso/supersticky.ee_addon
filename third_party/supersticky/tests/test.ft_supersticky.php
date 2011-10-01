@@ -93,6 +93,19 @@ class Test_supersticky_ft extends Testee_unit_test_case {
       $this->_model->expectNever('update_supersticky_entry_with_post_data');
       $this->_model->expectNever('save_supersticky_entry');
 
+      // Log the error.
+      $error_message = 'Epic fail!';
+      $error_data = print_r($this->_subject->settings, TRUE);
+
+      $this->_ee->lang->expectOnce('line',
+        array('error__post_save_missing_entry_id'));
+
+      $this->_ee->lang->setReturnValue('line', $error_message,
+        array('error__post_save_missing_entry_id'));
+
+      $this->_model->expectOnce('log_message',
+        array($error_message, 3, array(), $error_data));
+
       $this->_subject->post_save(array());
     }
 
@@ -106,6 +119,19 @@ class Test_supersticky_ft extends Testee_unit_test_case {
 
       $this->_model->expectNever('update_supersticky_entry_with_post_data');
       $this->_model->expectNever('save_supersticky_entry');
+
+      // Log the error.
+      $error_message = 'Oh noes!';
+      $error_data = print_r($this->_subject->settings, TRUE);
+
+      $this->_ee->lang->expectOnce('line',
+        array('error__post_save_missing_entry_id'));
+
+      $this->_ee->lang->setReturnValue('line', $error_message,
+        array('error__post_save_missing_entry_id'));
+
+      $this->_model->expectOnce('log_message',
+        array($error_message, 3, array(), $error_data));
 
       $this->_subject->post_save(array());
     }

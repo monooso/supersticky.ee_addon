@@ -91,6 +91,13 @@ class Supersticky_ft extends EE_Fieldtype {
       OR ! valid_int($this->settings['entry_id'], 1)
     )
     {
+      $this->_model->log_message(
+        $this->EE->lang->line('error__post_save_missing_entry_id'),
+        3,
+        array(),
+        print_r($this->settings, TRUE)
+      );
+
       return;
     }
 
