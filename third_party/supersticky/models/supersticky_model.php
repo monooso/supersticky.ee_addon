@@ -150,7 +150,7 @@ class Supersticky_model extends CI_Model {
 
     $member_groups = array();
 
-    foreach ($db_groups->row_array() AS $db_group)
+    foreach ($db_groups->result_array() AS $db_group)
     {
       $member_groups[$db_group['group_id']] = $db_group['group_title'];
     }

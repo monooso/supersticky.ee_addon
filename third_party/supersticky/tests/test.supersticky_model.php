@@ -105,8 +105,8 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
     $db->setReturnReference('get_where', $db_result);
 
-    $db_result->expectOnce('row_array');
-    $db_result->setReturnValue('row_array', $db_rows);
+    $db_result->expectOnce('result_array');
+    $db_result->setReturnValue('result_array', $db_rows);
 
     $expected_result = array();
 
@@ -134,8 +134,8 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
     $db->setReturnReference('get_where', $db_result);
 
-    $db_result->expectOnce('row_array');
-    $db_result->setReturnValue('row_array', array());
+    $db_result->expectOnce('result_array');
+    $db_result->setReturnValue('result_array', array());
 
     $this->assertIdentical(
       array(),
