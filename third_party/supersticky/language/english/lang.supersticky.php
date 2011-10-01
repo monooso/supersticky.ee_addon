@@ -16,6 +16,13 @@ $lang = array(
 'supersticky_module_name'        => 'SuperSticky',
 'supersticky_module_description' => 'Superior stickies.',
 
+/* --------------------------------------------------------------
+ * ERRORS
+ * ------------------------------------------------------------ */
+'error__post_save_missing_entry_id'
+  => 'Missing entry ID in Supersticky_ft::post_save',
+
+
 // All done.
 '' => ''
 
