@@ -56,6 +56,61 @@ class Test_supersticky_ft extends Testee_unit_test_case {
     }
 
 
+    public function test__post_save__populates_supersticky_entry_with_entry_id()
+    {
+      $entry_id = 111;
+
+      $entry_a = new Supersticky_entry(array('entry_id' => $entry_id));
+      $entry_b = clone $entry_a;
+
+      $entry_b->add_criterion(new Supersticky_criterion(array(
+        'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
+        'value' => 100
+      )));
+
+      // The entry ID is stored in the Fieldtype's public $settings array.
+      $this->_subject->settings = array_merge(
+        $this->_subject->settings,
+        array('entry_id' => $entry_id)
+      );
+
+      $this->_model->expectOnce('update_supersticky_entry_with_post_data',
+        array($entry_a));
+
+      $this->_model->setReturnValue('update_supersticky_entry_with_post_data',
+        $entry_b);
+
+      $this->_model->expectOnce('save_supersticky_entry', array($entry_b));
+
+      $this->_subject->post_save(array());
+    }
+
+
+    public function test__post_save__logs_error_if_no_entry_id()
+    {
+      unset($this->_subject->settings['entry_id']);
+
+      $this->_model->expectNever('update_supersticky_entry_with_post_data');
+      $this->_model->expectNever('save_supersticky_entry');
+
+      $this->_subject->post_save(array());
+    }
+
+
+    public function test__post_save__logs_error_if_invalid_entry_id()
+    {
+      $this->_subject->settings = array_merge(
+        $this->_subject->settings,
+        array('entry_id' => 0)
+      );
+
+      $this->_model->expectNever('update_supersticky_entry_with_post_data');
+      $this->_model->expectNever('save_supersticky_entry');
+
+      $this->_subject->post_save(array());
+    }
+
+
 }
 
 
