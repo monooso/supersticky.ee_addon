@@ -8,6 +8,8 @@
  * @package         Supersticky
  */
 
+require_once PATH_THIRD .'supersticky/classes/supersticky_entry.php';
+
 class Supersticky_ft extends EE_Fieldtype {
 
   private $_model;
@@ -70,44 +72,6 @@ class Supersticky_ft extends EE_Fieldtype {
     return $this->EE->load->view('ft', array(), TRUE);
   }
 
-
-  /**
-   * Saves the entry data. Used in favour of `save` as we need the entry ID.
-   *
-   * @access  public
-   * @param   Array    $data    User-submitted entry data.
-   * @return  void
-   */
-  public function post_save(Array $data = array())
-  {
-    /**
-     * It's all a matter of trust. For example, do we absolutely trust
-     * that EllisLab will provide us with a valid entry ID, as documented?
-     *
-     * No, no we don't.
-     */
-
-    if ( ! isset($this->settings['entry_id'])
-      OR ! valid_int($this->settings['entry_id'], 1)
-    )
-    {
-      $this->_model->log_message(
-        $this->EE->lang->line('error__post_save_missing_entry_id'),
-        3,
-        array(),
-        print_r($this->settings, TRUE)
-      );
-
-      return;
-    }
-
-    $entry = new Supersticky_entry(
-      array('entry_id' => $this->settings['entry_id']));
-
-    $this->_model->save_supersticky_entry(
-      $this->_model->update_supersticky_entry_with_post_data($entry));
-  }
-  
 
   /**
    * Renders the SuperSticky fieldtype template tag. Doesn't really make a
