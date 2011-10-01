@@ -23,6 +23,8 @@
         .find('.row').each(function() {
           var $iniRow = $(this);
           
+          iniCriterion.apply($iniRow[0]);
+
           /**
            * 'Criterion type' change handler. This is automatically
            * copied to new rows, so there's no need to include it
@@ -39,8 +41,6 @@
             var criterionType         = this.value;
             var criterionOptionsClass = '.ss_criterion_options_' + criterionType;
             var $criterionOptions     = $row.find(criterionOptionsClass);
-
-            iniCriterion.apply($iniRow[0]);
 
             /**
              * The jQuery UI DatePicker is a complete pain. Any attempts
