@@ -104,6 +104,12 @@ class Supersticky_model extends CI_Model {
       $this->EE->session->cache[$this->_namespace][$this->_package_name]
         = array();
     }
+
+    // Load the OmniLogger class.
+    if (file_exists(PATH_THIRD .'omnilog/classes/omnilogger.php'))
+    {
+      include_once PATH_THIRD .'omnilog/classes/omnilogger.php';
+    }
   }
 
 
@@ -300,6 +306,58 @@ class Supersticky_model extends CI_Model {
     $this->EE->load->library('layout');
     $this->EE->layout->add_layout_tabs($this->_get_layout_tabs(),
       'supersticky');
+  }
+
+  /**
+   * Logs a message to OmniLog.
+   *
+   * @access  public
+   * @param   string      $message        The log entry message.
+   * @param   int         $severity       The log entry 'level'.
+   * @param   array       $emails         An array of "admin" email addresses.
+   * @param   string      $extended_data  Additional data.
+   * @return  void
+   */
+  public function log_message(
+    $message,
+    $severity = 1,
+    Array $emails = array(),
+    $extended_data = ''
+  )
+  {
+    if (class_exists('Omnilog_entry') && class_exists('Omnilogger'))
+    {
+      switch ($severity)
+      {
+        case 3:
+          $notify = TRUE;
+          $type   = Omnilog_entry::ERROR;
+          break;
+
+        case 2:
+          $notify = FALSE;
+          $type   = Omnilog_entry::WARNING;
+          break;
+
+        case 1:
+        default:
+          $notify = FALSE;
+          $type   = Omnilog_entry::NOTICE;
+          break;
+      }
+
+      $omnilog_entry = new Omnilog_entry(array(
+        'addon_name'    => $this->get_package_name(),
+        'admin_emails'  => $emails,
+        'date'          => time(),
+        'extended_data' => $extended_data,
+        'message'       => $message,
+        'notify_admin'  => $notify,
+        'type'          => $type
+      ));
+
+      Omnilogger::log($omnilog_entry);
+    }
   }
 
 

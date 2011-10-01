@@ -20,6 +20,10 @@ class Mock_supersticky_model {
     public function install_module_register() {}
     public function install_module_tables() {}
     public function install_module_tabs() {}
+
+    public function log_message($message, $severity = 1,
+      Array $emails = array(), $extended_data = '') {}
+
     public function save_supersticky_entry(Supersticky_entry $entry) {}
     public function uninstall_module() {}
     public function update_module($installed_version = '') {}
