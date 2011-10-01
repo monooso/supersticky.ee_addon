@@ -58,6 +58,32 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
+  public function test__get_criterion_type_options__success()
+  {
+    $lbl_date_range   = 'Date Range';
+    $lbl_instruction  = 'Instructions';
+    $lbl_member_group = 'Member Group';
+
+    $lang = $this->_ee->lang;
+
+    $lang->expectCallCount('line', 3);
+    $lang->setReturnValue('line', $lbl_date_range, array('lbl__date_range'));
+    $lang->setReturnValue('line', $lbl_instruction, array('lbl__criterion_type'));
+    $lang->setReturnValue('line', $lbl_member_group, array('lbl__member_group'));
+
+    $expected_result = array(
+      ''              => $lbl_instruction,
+      'date_range'    => $lbl_date_range,
+      'member_group'  => $lbl_member_group
+    );
+  
+    $this->assertIdentical(
+      $expected_result,
+      $this->_subject->get_criterion_type_options()
+    );
+  }
+
+
   public function test__get_site_id__success()
   {
     $this->_ee->config->expectOnce('item', array('site_id'));

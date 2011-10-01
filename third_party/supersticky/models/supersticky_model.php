@@ -114,6 +114,27 @@ class Supersticky_model extends CI_Model {
 
 
   /**
+   * Returns an associative array of criterion type 'options', for use
+   * in a form dropdown.
+   *
+   * @access  public
+   * @return  Array
+   */
+  public function get_criterion_type_options()
+  {
+    $lang = $this->EE->lang;
+
+    return array(
+      '' => $lang->line('lbl__criterion_type'),
+      Supersticky_criterion::TYPE_DATE_RANGE
+        => $lang->line('lbl__' .Supersticky_criterion::TYPE_DATE_RANGE),
+      Supersticky_criterion::TYPE_MEMBER_GROUP
+        => $lang->line('lbl__' .Supersticky_criterion::TYPE_MEMBER_GROUP)
+    );
+  }
+
+
+  /**
    * Returns the package name.
    *
    * @access  public
