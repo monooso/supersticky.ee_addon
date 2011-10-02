@@ -45,6 +45,8 @@
                     }
                 });
 
+                $cloneRow.find('select').val('');
+
                 // Pre-add event. Only checks return value from last listener.
                 if ($link.data('events').preAddRow !== undefined) {
                     eventData = {container : $container, options : opts, newRow : $cloneRow};
@@ -60,15 +62,15 @@
                 // Otherwise, just tag it on the end.
                 typeof $parentRow === 'object' ? $parentRow.after($cloneRow) : $lastRow.append($cloneRow);
 
-                // Post-add event.
-                if ($link.data('events').postAddRow !== undefined) {
-                    eventData = {container : $container, options : opts};
-                    $link.triggerHandler('postAddRow', [eventData]);
-                }
-
                 // Update everything.
                 updateIndexes($container, opts);
                 updateNav($container, opts);
+
+                // Post-add event.
+                if ($link.data('events').postAddRow !== undefined) {
+                    eventData = {container : $container, options : opts, newRow: $cloneRow};
+                    $link.triggerHandler('postAddRow', [eventData]);
+                }
             });
 
 
@@ -109,20 +111,23 @@
     function updateIndexes($container, opts) {
       $container.find('.' + opts.rowClass).each(function(rowCount) {
         regex = /^([a-z_]+)\[(?:[0-9]+)\]\[([a-z_]+)\]$/;
+        regex = /^([a-z_]+)\[(?:[0-9]+)\](.*)$/;
 
         $(this).find('input, select, textarea').each(function(fieldCount) {
           $field = $(this);
 
           if ($field.attr('id')) {
-            $field.attr('id',
-              $field.attr('id').replace(regex, '$1[' + rowCount + '][$2]'));
+            var fieldId = $field.attr('id')
+              .replace(regex, '$1[' + rowCount + ']$2');
+
+            $field.attr('id', fieldId);
           }
 
-          var fieldName = $(this).attr('name');
+          if ($field.attr('name')) {
+            var fieldName = $field.attr('name')
+              .replace(regex, '$1[' + rowCount + ']$2');
 
-          if (fieldName) {
-            fieldName = fieldName.replace(regex, '$1[' + rowCount + '][$2]');
-            $(this).attr('name', fieldName);
+            $field.attr('name', fieldName);
           }
         });
       });

@@ -18,76 +18,29 @@
      * @return  void
      */
     function iniRoland() {
-      $wrapper.find('.roland')
-        .roland()
-        .find('.row').each(function() {
+      $wrapper.find('.criterion_roland')
+        .roland({
+          addRowClass     : 'criterion_add_row',
+          removeRowClass  : 'criterion_remove_row',
+          rowClass        : 'criterion_row'
+        })
+        .find('.criterion_row').each(function() {
           var $iniRow = $(this);
           
           iniCriterion.apply($iniRow[0]);
 
-          /**
-           * 'Criterion type' change handler. This is automatically
-           * copied to new rows, so there's no need to include it
-           * in the 'iniCriterion' function.
-           *
-           * Also, we _must not_ use $iniRow in the change handler, as
-           * it refers to the original row object.
-           *
-           * The previous two paragraphs; two hours of my life.
-           */
-
-          $iniRow.find('select[name$="[type]"]').change(function() {
-            var $row                  = $(this).closest('tr');
-            var criterionType         = this.value;
-            var criterionOptionsClass = '.ss_criterion_options_' + criterionType;
-            var $criterionOptions     = $row.find(criterionOptionsClass);
-
-            /**
-             * The jQuery UI DatePicker is a complete pain. Any attempts
-             * to initialise it when the row is created fail, as the
-             * date picker is _activated_ on the correct field, but then
-             * proceeds to _populate_ the original row.
-             */
-
-            var $datePickers = $criterionOptions
-              .find('[id$="[date_range_from]"], [id$="[date_range_to]"]')
-              .datepicker('destroy')
-              .datepicker({
-                changeMonth     : true,
-                dateFormat      : 'yy-mm-dd',
-                defaultDate     : '+1w',
-                numberOfMonths  : 2,
-                onSelect        : function(selectedDate) {
-                  // Ensure that the end date cannot be before the
-                  // start date, and vice-versa.
-                  var option = this.id.match(/\[date_range_from\]$/)
-                    ? 'minDate' : 'maxDate';
-
-                  var instance = $(this).data('datepicker');
-
-                  var date = $.datepicker.parseDate(
-                    instance.settings.dateFormat || $.datepicker._defaults.dateFormat,
-                    selectedDate,
-                    instance.settings
-                  );
-
-                  $datePickers.not(this).datepicker('option', option, date);
-                },
-                showAnim        : 'fadeIn'
-              });
-
-            $criterionOptions
-              .fadeIn()
-              .siblings('.ss_criterion_options').hide();
-
-          }).change();
-
-          // Same deal as the change handler.
-          $iniRow.find('.add_row')
-            .bind('preAddRow', function(event, eventData) {
+          $iniRow.find('.criterion_add_row')
+            .bind('postAddRow', function(event, eventData) {
+              console.log(eventData.newRow.html())
               iniCriterion.apply(eventData.newRow[0]);
-              return eventData.newRow;
             });
+        });
+
+      $wrapper.find('.member_group_roland')
+        .roland({
+          addRowClass     : 'member_group_add_row',
+          removeRowClass  : 'member_group_remove_row',
+          rowClass        : 'member_group_row'
         });
     };
 
@@ -100,16 +53,43 @@
      */
     function iniCriterion() {
       var $row = $(this);
-      $row.find('.ss_criterion_options').hide();
+
+      $row.find('.member_group_row').slice(1).remove();
+      
+      var $datePickers = $row
+        .find('[id$="[date_from]"], [id$="[date_to]"]')
+        .datepicker('destroy')
+        .datepicker({
+          changeMonth     : true,
+          dateFormat      : 'yy-mm-dd',
+          defaultDate     : '+1w',
+          numberOfMonths  : 2,
+          onSelect        : function(selectedDate) {
+            // Ensure that the end date cannot be before the
+            // start date, and vice-versa.
+            var option = this.id.match(/\[date_from\]$/)
+              ? 'minDate' : 'maxDate';
+
+            var instance = $(this).data('datepicker');
+
+            var date = $.datepicker.parseDate(
+              instance.settings.dateFormat || $.datepicker._defaults.dateFormat,
+              selectedDate,
+              instance.settings
+            );
+
+            console.log('Date Picker ID: ' + this.id);
+
+            $datePickers.not(this).datepicker('option', option, date);
+          },
+          showAnim        : 'fadeIn'
+        });
     };
 
 
     // Superstar DJ, here we go...
     iniRoland();
 
-    /**
-     * @todo Unbind change handlers when row is deleted (updates to Roland).
-     */
   });
 
 })(jQuery)
