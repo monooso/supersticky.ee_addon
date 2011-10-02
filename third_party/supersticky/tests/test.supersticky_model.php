@@ -548,15 +548,16 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
     $criteria = array(
       new Supersticky_criterion(array(
-        'type' => Supersticky_criterion::TYPE_DATE_RANGE,
-        'date_range' => '2011-01-01T00:00:01+0:00 2011-12-31T23:59:59+0:00'
+        'type' => Supersticky_criterion::TYPE_MEMBER_GROUP,
+        'member_group' => '11'
       ))
     );
 
     $in_criteria = array(
       array(
-        'type' => Supersticky_criterion::TYPE_MEMBER_GROUP,
-        'member_group' => '11'
+        'type' => Supersticky_criterion::TYPE_DATE_RANGE,
+        'date_range_from' => '2011-01-01',
+        'date_range_to'   => '2011-12-31'
       )
     );
 
@@ -577,7 +578,9 @@ class Test_supersticky_model extends Testee_unit_test_case {
         ),
         array(
           'type'  => $in_criteria[0]['type'],
-          'value' => $in_criteria[0]['member_group']
+          'value' => $in_criteria[0]['date_range_from']
+                      .Supersticky_criterion::DATE_RANGE_DELIMITER
+                      .$in_criteria[0]['date_range_to']
         )
       ),
       'entry_id' => $entry_id
@@ -651,7 +654,13 @@ class Test_supersticky_model extends Testee_unit_test_case {
       ),
       array(
         'type' => Supersticky_criterion::TYPE_DATE_RANGE,
-        'date_range' => ''
+        'date_range_from' => '',
+        'date_range_to' => '2011-12-31'
+      ),
+      array(
+        'type' => Supersticky_criterion::TYPE_DATE_RANGE,
+        'date_range_from' => '2011-01-01',
+        'date_range_to' => ''
       ),
       array(
         'type' => Supersticky_criterion::TYPE_MEMBER_GROUP,
@@ -680,7 +689,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
   public function test__update_supersticky_entry_with_post_data__copes_with_invalid_type()
   {
     $in = $this->_ee->input;
-    $in_criteria = array(array( 'type' => 'Wibble'));
+    $in_criteria = array(array('type' => 'Wibble'));
     $entry = new Supersticky_entry(array('entry_id' => 100));
 
     $in->expectOnce('post', array('supersticky_criteria'));

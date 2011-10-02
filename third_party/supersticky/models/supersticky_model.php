@@ -537,10 +537,20 @@ class Supersticky_model extends CI_Model {
       switch ($in_criterion['type'])
       {
         case Supersticky_criterion::TYPE_DATE_RANGE:
-          $in_value = array_key_exists('date_range', $in_criterion)
-            ? $in_criterion['date_range']
-            : '';
-
+          if ( ! array_key_exists('date_range_from', $in_criterion)
+            OR ! array_key_exists('date_range_to', $in_criterion)
+            OR ! $in_criterion['date_range_from']
+            OR ! $in_criterion['date_range_to']
+          )
+          {
+            $in_value = '';
+          }
+          else
+          {
+            $in_value = $in_criterion['date_range_from']
+                          .Supersticky_criterion::DATE_RANGE_DELIMITER
+                          .$in_criterion['date_range_to'];
+          }
           break;
 
         case Supersticky_criterion::TYPE_MEMBER_GROUP:

@@ -10,9 +10,9 @@
 
 class Supersticky_criterion {
 
-  // Known criterion types.
-  const TYPE_DATE_RANGE   = 'date_range';
-  const TYPE_MEMBER_GROUP = 'member_group';
+  const DATE_RANGE_DELIMITER  = '|';
+  const TYPE_DATE_RANGE       = 'date_range';
+  const TYPE_MEMBER_GROUP     = 'member_group';
 
   private $_type;
   private $_value;
