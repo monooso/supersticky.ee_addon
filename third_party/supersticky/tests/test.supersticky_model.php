@@ -700,7 +700,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
-  public function xtest__update_supersticky_entry_with_post_data__updates_criteria()
+  public function test__update_supersticky_entry_with_post_data__preserves_existing_criteria()
   {
     $in = $this->_ee->input;
 
@@ -708,16 +708,17 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
     $criteria = array(
       new Supersticky_criterion(array(
-        'type' => Supersticky_criterion::TYPE_MEMBER_GROUP,
-        'member_group' => '11'
+        'date_from'     => new DateTime('1935-06-14'),
+        'date_to'       => new DateTime('1944-02-18'),
+        'member_groups' => array(10, 20, 30)
       ))
     );
 
     $in_criteria = array(
       array(
-        'type' => Supersticky_criterion::TYPE_DATE_RANGE,
-        'date_range_from' => '2011-01-01',
-        'date_range_to'   => '2011-12-31'
+        'date_from'     => '1973-02-19',
+        'date_to'       => '2011-10-03',
+        'member_groups' => array('15', '25', '35')
       )
     );
 
@@ -730,141 +731,186 @@ class Test_supersticky_model extends Testee_unit_test_case {
     $in->expectOnce('post', array('supersticky_criteria'));
     $in->setReturnValue('post', $in_criteria, array('supersticky_criteria'));
 
-    $expected_result = array(
-      'criteria' => array(
-        array(
-          'type'  => $criteria[0]->get_type(),
-          'value' => $criteria[0]->get_value()
-        ),
-        array(
-          'type'  => $in_criteria[0]['type'],
-          'value' => $in_criteria[0]['date_range_from']
-                      .Supersticky_criterion::DATE_RANGE_DELIMITER
-                      .$in_criteria[0]['date_range_to']
-        )
-      ),
-      'entry_id' => $entry_id
+    $expected_result = clone $entry;
+    $expected_result->add_criterion(new Supersticky_criterion(array(
+      'date_from'     => new DateTime($in_criteria[0]['date_from']),
+      'date_to'       => new DateTime($in_criteria[0]['date_to']),
+      'member_groups' => $in_criteria[0]['member_groups']
+    )));
+
+    $actual_result
+      = $this->_subject->update_supersticky_entry_with_post_data($entry);
+
+    $this->assertIdentical($expected_result->get_entry_id(),
+      $actual_result->get_entry_id());
+
+    $actual_criteria = $actual_result->get_criteria();
+    $expected_criteria = $expected_result->get_criteria();
+
+    $this->assertIdentical(count($expected_criteria),
+      count($actual_criteria));
+
+    for ($count = 0, $limit = count($expected_criteria); $count < $limit; $count++)
+    {
+      $actual_criterion = $actual_criteria[$count];
+      $expected_criterion = $expected_criteria[$count];
+
+      $this->assertIdentical($expected_criterion->get_date_from()->format(DATE_W3C),
+        $actual_criterion->get_date_from()->format(DATE_W3C));
+
+      $this->assertIdentical($expected_criterion->get_date_to()->format(DATE_W3C),
+        $actual_criterion->get_date_to()->format(DATE_W3C));
+
+      $this->assertIdentical($expected_criterion->get_member_groups(),
+        $actual_criterion->get_member_groups());
+    }
+  }
+
+
+  public function test__update_supersticky_entry_with_post_data__ignores_criteria_with_missing_data()
+  {
+    $in = $this->_ee->input;
+
+    $entry_id = 100;
+
+    $criteria = array(
+      new Supersticky_criterion(array(
+        'date_from'     => new DateTime('1935-06-14'),
+        'date_to'       => new DateTime('1944-02-18'),
+        'member_groups' => array(10, 20, 30)
+      ))
     );
-  
-    $actual_result
-      = $this->_subject->update_supersticky_entry_with_post_data($entry);
-
-    $actual_result = $actual_result->to_array();
-    ksort($actual_result);
-
-    $this->assertIdentical($expected_result, $actual_result);
-  }
-
-
-  public function xtest__update_supersticky_entry_with_post_data__copes_with_invalid_criteria()
-  {
-    $in = $this->_ee->input;
-    $in_criteria = 'This should be an array.';
-    $entry = new Supersticky_entry(array('entry_id' => 100));
-
-    $in->expectOnce('post', array('supersticky_criteria'));
-    $in->setReturnValue('post', $in_criteria, array('supersticky_criteria'));
-  
-    $actual_result
-      = $this->_subject->update_supersticky_entry_with_post_data($entry);
-
-    $expected_result = $entry->to_array();
-    $actual_result = $actual_result->to_array();
-
-    ksort($actual_result);
-    ksort($expected_result);
-
-    $this->assertIdentical($expected_result, $actual_result);
-  }
-
-
-  public function xtest__update_supersticky_entry_with_post_data__copes_with_invalid_criterion()
-  {
-    $in = $this->_ee->input;
-    $in_criteria = array(999, TRUE, 'These should be arrays');
-    $entry = new Supersticky_entry(array('entry_id' => 100));
-
-    $in->expectOnce('post', array('supersticky_criteria'));
-    $in->setReturnValue('post', $in_criteria, array('supersticky_criteria'));
-  
-    $actual_result
-      = $this->_subject->update_supersticky_entry_with_post_data($entry);
-
-    $expected_result = $entry->to_array();
-    $actual_result = $actual_result->to_array();
-
-    ksort($actual_result);
-    ksort($expected_result);
-
-    $this->assertIdentical($expected_result, $actual_result);
-  }
-
-
-  public function xtest__update_supersticky_entry_with_post_data__copes_with_missing_criterion_data()
-  {
-    $in = $this->_ee->input;
 
     $in_criteria = array(
-      array('member_group' => '100'),
+      // Missing 'from' date.
       array(
-        'type' => Supersticky_criterion::TYPE_DATE_RANGE
+        'date_to'       => '2011-10-03',
+        'member_groups' => array('15', '25', '35')
       ),
+      // Missing 'to' date.
       array(
-        'type' => Supersticky_criterion::TYPE_MEMBER_GROUP
+        'date_from'     => '1973-02-19',
+        'member_groups' => array('15', '25', '35')
       ),
+      // Missing member groups.
       array(
-        'type' => Supersticky_criterion::TYPE_DATE_RANGE,
-        'date_range_from' => '',
-        'date_range_to' => '2011-12-31'
-      ),
-      array(
-        'type' => Supersticky_criterion::TYPE_DATE_RANGE,
-        'date_range_from' => '2011-01-01',
-        'date_range_to' => ''
-      ),
-      array(
-        'type' => Supersticky_criterion::TYPE_MEMBER_GROUP,
-        'member_group' => ''
+        'date_from'     => '1973-02-19',
+        'date_to'       => '2011-10-03'
       )
     );
 
-    $entry = new Supersticky_entry(array('entry_id' => 100));
+    $entry = new Supersticky_entry(array(
+      'criteria' => $criteria,
+      'entry_id' => $entry_id
+    ));
 
+    // POST data.
     $in->expectOnce('post', array('supersticky_criteria'));
     $in->setReturnValue('post', $in_criteria, array('supersticky_criteria'));
-  
+
+    $expected_result = clone $entry;
+
     $actual_result
       = $this->_subject->update_supersticky_entry_with_post_data($entry);
 
-    $expected_result = $entry->to_array();
-    $actual_result = $actual_result->to_array();
+    $this->assertIdentical($expected_result->get_entry_id(),
+      $actual_result->get_entry_id());
 
-    ksort($actual_result);
-    ksort($expected_result);
+    $actual_criteria = $actual_result->get_criteria();
+    $expected_criteria = $expected_result->get_criteria();
 
-    $this->assertIdentical($expected_result, $actual_result);
+    $this->assertIdentical(count($expected_criteria),
+      count($actual_criteria));
+
+    for ($count = 0, $limit = count($expected_criteria); $count < $limit; $count++)
+    {
+      $actual_criterion = $actual_criteria[$count];
+      $expected_criterion = $expected_criteria[$count];
+
+      $this->assertIdentical($expected_criterion->get_date_from()->format(DATE_W3C),
+        $actual_criterion->get_date_from()->format(DATE_W3C));
+
+      $this->assertIdentical($expected_criterion->get_date_to()->format(DATE_W3C),
+        $actual_criterion->get_date_to()->format(DATE_W3C));
+
+      $this->assertIdentical($expected_criterion->get_member_groups(),
+        $actual_criterion->get_member_groups());
+    }
   }
 
 
-  public function xtest__update_supersticky_entry_with_post_data__copes_with_invalid_type()
+  public function test__update_supersticky_entry_with_post_data__ignores_criteria_with_invalid_data()
   {
     $in = $this->_ee->input;
-    $in_criteria = array(array('type' => 'Wibble'));
-    $entry = new Supersticky_entry(array('entry_id' => 100));
 
+    $entry_id = 100;
+
+    $criteria = array(
+      new Supersticky_criterion(array(
+        'date_from'     => new DateTime('1935-06-14'),
+        'date_to'       => new DateTime('1944-02-18'),
+        'member_groups' => array(10, 20, 30)
+      ))
+    );
+
+    $in_criteria = array(
+      // Invalid 'from' date.
+      array(
+        'date_from'     => 'Not a real date',
+        'date_to'       => '2011-10-03',
+        'member_groups' => array('15', '25', '35')
+      ),
+      // Invalid 'to' date.
+      array(
+        'date_from'     => '1973-02-19',
+        'date_to'       => 'Utter gibberish',
+        'member_groups' => array('15', '25', '35')
+      ),
+      // Invalid member groups.
+      array(
+        'date_from'     => '1973-02-19',
+        'date_to'       => '2011-10-03',
+        'member_groups' => 'This should be an array'
+      )
+    );
+
+    $entry = new Supersticky_entry(array(
+      'criteria' => $criteria,
+      'entry_id' => $entry_id
+    ));
+
+    // POST data.
     $in->expectOnce('post', array('supersticky_criteria'));
     $in->setReturnValue('post', $in_criteria, array('supersticky_criteria'));
-  
+
+    $expected_result = clone $entry;
+
     $actual_result
       = $this->_subject->update_supersticky_entry_with_post_data($entry);
 
-    $expected_result = $entry->to_array();
-    $actual_result = $actual_result->to_array();
+    $this->assertIdentical($expected_result->get_entry_id(),
+      $actual_result->get_entry_id());
 
-    ksort($actual_result);
-    ksort($expected_result);
+    $actual_criteria = $actual_result->get_criteria();
+    $expected_criteria = $expected_result->get_criteria();
 
-    $this->assertIdentical($expected_result, $actual_result);
+    $this->assertIdentical(count($expected_criteria),
+      count($actual_criteria));
+
+    for ($count = 0, $limit = count($expected_criteria); $count < $limit; $count++)
+    {
+      $actual_criterion = $actual_criteria[$count];
+      $expected_criterion = $expected_criteria[$count];
+
+      $this->assertIdentical($expected_criterion->get_date_from()->format(DATE_W3C),
+        $actual_criterion->get_date_from()->format(DATE_W3C));
+
+      $this->assertIdentical($expected_criterion->get_date_to()->format(DATE_W3C),
+        $actual_criterion->get_date_to()->format(DATE_W3C));
+
+      $this->assertIdentical($expected_criterion->get_member_groups(),
+        $actual_criterion->get_member_groups());
+    }
   }
 
 

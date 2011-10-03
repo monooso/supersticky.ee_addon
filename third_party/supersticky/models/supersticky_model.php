@@ -537,52 +537,21 @@ class Supersticky_model extends CI_Model {
 
     foreach ($in_criteria AS $in_criterion)
     {
-      if ( ! is_array($in_criterion)
-        OR ! array_key_exists('type', $in_criterion)
+      if ( ! array_key_exists('date_from', $in_criterion)
+        OR ! array_key_exists('date_to', $in_criterion)
+        OR ! array_key_exists('member_groups', $in_criterion)
+        OR ($date_from = date_create($in_criterion['date_from'])) === FALSE
+        OR ($date_to = date_create($in_criterion['date_to'])) === FALSE
+        OR ! is_array($in_criterion['member_groups'])
       )
       {
         continue;
       }
 
-      switch ($in_criterion['type'])
-      {
-        case Supersticky_criterion::TYPE_DATE_RANGE:
-          if ( ! array_key_exists('date_range_from', $in_criterion)
-            OR ! array_key_exists('date_range_to', $in_criterion)
-            OR ! $in_criterion['date_range_from']
-            OR ! $in_criterion['date_range_to']
-          )
-          {
-            $in_value = '';
-          }
-          else
-          {
-            $in_value = $in_criterion['date_range_from']
-                          .Supersticky_criterion::DATE_RANGE_DELIMITER
-                          .$in_criterion['date_range_to'];
-          }
-          break;
-
-        case Supersticky_criterion::TYPE_MEMBER_GROUP:
-          $in_value = array_key_exists('member_group', $in_criterion)
-            ? $in_criterion['member_group']
-            : '';
-
-          break;
-
-        default:
-          $in_value = '';
-          break;
-      }
-
-      if ( ! $in_value)
-      {
-        continue;
-      }
-
       $new_entry->add_criterion(new Supersticky_criterion(array(
-        'type'  => $in_criterion['type'],
-        'value' => $in_value
+        'date_from'     => new DateTime($in_criterion['date_from']),
+        'date_to'       => new DateTime($in_criterion['date_to']),
+        'member_groups' => $in_criterion['member_groups']
       )));
     }
 
