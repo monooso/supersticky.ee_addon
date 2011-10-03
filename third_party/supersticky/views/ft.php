@@ -2,9 +2,9 @@
   <table class="mainTable" cellpadding="0" cellspacing="0">
     <thead>
       <tr>
-        <th>Make Entry Sticky For</th>
-        <th width="25%">From</th>
-        <th width="25%">To</th>
+        <th><?php echo lang('thd__member_groups'); ?></th>
+        <th width="25%"><?php echo lang('thd__date_from'); ?></th>
+        <th width="25%"><?php echo lang('thd__date_to'); ?></th>
         <th width="44px">&nbsp;</th>
       </tr>
     </thead>
