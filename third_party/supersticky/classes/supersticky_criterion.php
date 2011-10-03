@@ -8,14 +8,13 @@
  * @package         Supersticky
  */
 
+require_once PATH_THIRD .'supersticky/helpers/EI_number_helper.php';
+
 class Supersticky_criterion {
 
-  const DATE_RANGE_DELIMITER  = '|';
-  const TYPE_DATE_RANGE       = 'date_range';
-  const TYPE_MEMBER_GROUP     = 'member_group';
-
-  private $_type;
-  private $_value;
+  private $_date_from;
+  private $_date_to;
+  private $_member_groups;
 
 
   /* --------------------------------------------------------------
@@ -46,26 +45,56 @@ class Supersticky_criterion {
 
 
   /**
-   * Returns the Criterion Type.
+   * Adds a group ID to the member groups array.
    *
    * @access  public
-   * @return  string
+   * @param   int|string  $group_id     The member group ID.
+   * @return  Array
    */
-  public function get_type()
+  public function add_member_group($group_id)
   {
-    return $this->_type;
+    if (valid_int($group_id, 1))
+    {
+      $this->_member_groups[] = (int) $group_id;
+    }
+
+    return $this->get_member_groups();
   }
 
 
   /**
-   * Returns the Criterion Value.
+   * Returns the 'from' date.
    *
-   * @access  public
-   * @return  string
+   * @access public
+   * @return DateTime or NULL
    */
-  public function get_value()
+  public function get_date_from()
   {
-    return $this->_value;
+    return $this->_date_from;
+  }
+
+
+  /**
+   * Returns to 'to' date.
+   *
+   * @access public
+   * @return DateTime or NULL
+   */
+  public function get_date_to()
+  {
+    return $this->_date_to;
+  }
+
+
+  /**
+   * Returns the member groups to which this criterion applies.
+   *
+   * @access public
+   * @return Array
+   */
+  public function get_member_groups()
+  {
+    return $this->_member_groups;
   }
 
 
@@ -77,46 +106,59 @@ class Supersticky_criterion {
    */
   public function reset()
   {
-    $this->_type  = '';
-    $this->_value = '';
+    $this->_date_from = NULL;
+    $this->_date_to = NULL;
+    $this->_member_groups = array();
 
     return $this;
   }
 
 
   /**
-   * Sets the Criterion Type.
+   * Sets the 'from' date.
    *
    * @access  public
-   * @param   string	type	The Criterion Type.
-   * @return  string
+   * @param   DateTime    $date_from    The 'from' date.
+   * @return  DateTime
    */
-  public function set_type($type)
+  public function set_date_from(DateTime $date_from)
   {
-    if ($this->_is_valid_type($type))
-    {
-      $this->_type = $type;
-    }
-
-    return $this->get_type();
+    $this->_date_from = $date_from;
+    return $this->get_date_from();
   }
 
 
   /**
-   * Sets the Criterion Value.
+   * Sets the 'to' date.
    *
    * @access  public
-   * @param   mixed     $value    The Criterion Value.
-   * @return  mixed
+   * @param   DateTime    $date_to    The 'to' date.
+   * @return  DateTime
    */
-  public function set_value($value)
+  public function set_date_to(DateTime $date_to)
   {
-    if (is_float($value) OR is_int($value) OR is_string($value))
+    $this->_date_to = $date_to;
+    return $this->get_date_to();
+  }
+
+
+  /**
+   * Sets the member groups to which this criterion applies.
+   *
+   * @access  public
+   * @param   Array     $member_groups    An array of member group IDs.
+   * @return  Array
+   */
+  public function set_member_groups(Array $member_groups = array())
+  {
+    $this->_member_groups = array();
+
+    foreach ($member_groups AS $member_group)
     {
-      $this->_value = $value;
+      $this->add_member_group($member_group);
     }
 
-    return $this->get_value();
+    return $this->get_member_groups();
   }
 
 
@@ -129,28 +171,9 @@ class Supersticky_criterion {
   public function to_array()
   {
     return array(
-      'type'  => $this->get_type(),
-      'value' => $this->get_value()
-    );
-  }
-
-
-  /* --------------------------------------------------------------
-   * PRIVATE METHODS
-   * ------------------------------------------------------------ */
-  
-  /**
-   * Determines whether the supplied 'type' is valid (i.e. recognised).
-   *
-   * @access  private
-   * @param   string    $type    The type.
-   * @return  bool
-   */
-  private function _is_valid_type($type)
-  {
-    return in_array(
-      $type,
-      array(self::TYPE_DATE_RANGE, self::TYPE_MEMBER_GROUP)
+      'date_from'     => $this->get_date_from(),
+      'date_to'       => $this->get_date_to(),
+      'member_groups' => $this->get_member_groups()
     );
   }
 
