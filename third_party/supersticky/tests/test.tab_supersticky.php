@@ -49,8 +49,9 @@ class Test_supersticky_tab extends Testee_unit_test_case {
       $entry_b = clone $entry_a;
 
       $entry_b->add_criterion(new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
-        'value' => 100
+        'date_from'     => new DateTime('1935-06-14'),
+        'date_to'       => new DateTime('1944-02-18'),
+        'member_groups' => array(10, 20, 30)
       )));
 
       $params = array(

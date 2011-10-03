@@ -76,9 +76,8 @@ class Supersticky_ft extends EE_Fieldtype {
       : FALSE;
 
     $view_vars = array(
-      'criterion_types' => $this->_model->get_criterion_type_options(),
-      'entry'           => $entry,
-      'member_groups'   => $this->_model->get_member_group_options()
+      'entry'         => $entry,
+      'member_groups' => $this->_model->get_member_group_options()
     );
 
     return $this->EE->load->view('ft', $view_vars, TRUE);

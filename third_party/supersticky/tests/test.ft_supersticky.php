@@ -49,11 +49,7 @@ class Test_supersticky_ft extends Testee_unit_test_case {
       $view_result = '<p>Display something.</p>';
 
       // Build the view variables.
-      $criterion_types  = array('a' => 'A', 'b' => 'B', 'c' => 'C');
-      $member_groups    = array('d' => 'D', 'e' => 'E', 'f' => 'F');
-
-      $this->_model->expectOnce('get_criterion_type_options');
-      $this->_model->setReturnValue('get_criterion_type_options', $criterion_types);
+      $member_groups = array('d' => 'D', 'e' => 'E', 'f' => 'F');
 
       $this->_model->expectOnce('get_member_group_options');
       $this->_model->setReturnValue('get_member_group_options', $member_groups);
@@ -61,9 +57,8 @@ class Test_supersticky_ft extends Testee_unit_test_case {
       $this->_model->expectNever('get_supersticky_entry_by_id');
 
       $view_vars = array(
-        'criterion_types' => $criterion_types,
-        'entry'           => FALSE,
-        'member_groups'   => $member_groups
+        'entry'         => FALSE,
+        'member_groups' => $member_groups
       );
 
       $this->_ee->load->expectOnce('view', array('ft', $view_vars, TRUE));
@@ -81,12 +76,7 @@ class Test_supersticky_ft extends Testee_unit_test_case {
 
       // Build the view variables.
       $entry = new Supersticky_entry(array('entry_id' => $data));
-
-      $criterion_types  = array('a' => 'A', 'b' => 'B', 'c' => 'C');
-      $member_groups    = array('d' => 'D', 'e' => 'E', 'f' => 'F');
-
-      $this->_model->expectOnce('get_criterion_type_options');
-      $this->_model->setReturnValue('get_criterion_type_options', $criterion_types);
+      $member_groups = array('d' => 'D', 'e' => 'E', 'f' => 'F');
 
       $this->_model->expectOnce('get_member_group_options');
       $this->_model->setReturnValue('get_member_group_options', $member_groups);
@@ -95,9 +85,8 @@ class Test_supersticky_ft extends Testee_unit_test_case {
       $this->_model->setReturnValue('get_supersticky_entry_by_id', $entry);
 
       $view_vars = array(
-        'criterion_types' => $criterion_types,
-        'entry'           => $entry,
-        'member_groups'   => $member_groups
+        'entry'         => $entry,
+        'member_groups' => $member_groups
       );
 
       $this->_ee->load->expectOnce('view', array('ft', $view_vars, TRUE));
