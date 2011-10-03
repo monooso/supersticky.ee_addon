@@ -492,17 +492,19 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
-  public function xtest__save_supersticky_entry__entry_saved()
+  public function test__save_supersticky_entry__entry_saved()
   {
     // Create the dummy entry.
     $criteria = array(
       new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_DATE_RANGE,
-        'value' => '2011-01-01T00:00:01+0:00 2011-12-31T23:59:59+0:00'
+        'date_from'     => new DateTime('1973-02-19'),
+        'date_to'       => new DateTime('2011-10-03'),
+        'member_groups' => array(10, 20, 30)
       )),
       new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
-        'value' => 999
+        'date_from'     => new DateTime('1935-06-14'),
+        'date_to'       => new DateTime('1944-02-18'),
+        'member_groups' => array(15, 25, 35, 45)
       ))
     );
 
@@ -518,7 +520,11 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
     foreach ($criteria AS $criterion)
     {
-      $insert_criteria[] = $criterion->to_array();
+      $insert_criteria[] = array(
+        'date_from'     => $criterion->get_date_from()->format(DATE_W3C),
+        'date_to'       => $criterion->get_date_to()->format(DATE_W3C),
+        'member_groups' => $criterion->get_member_groups()
+      );
     }
 
     $insert_data = array(
@@ -540,47 +546,53 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
-  public function xtest__save_supersticky_entry__fails_when_missing_entry_id()
+  public function test__save_supersticky_entry__fails_with_missing_data()
   {
-    // Create the dummy entry.
-    $criteria = array(
-      new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_DATE_RANGE,
-        'value' => '2011-01-01T00:00:01+0:00 2011-12-31T23:59:59+0:00'
-      )),
-      new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
-        'value' => 999
-      ))
-    );
+    // Missing entry ID.
+    $entry_a = new Supersticky_entry(array(
+      'criteria' => array(
+        new Supersticky_criterion(array(
+          'date_from'     => new DateTime('1935-06-14'),
+          'date_to'       => new DateTime('1944-02-18'),
+          'member_groups' => array(10, 20, 30)
+        ))
+      )
+    ));
 
-    $entry = new Supersticky_entry(array('criteria' => $criteria));
+    // Missing criteria.
+    $entry_b = new Supersticky_entry(array('entry_id' => 10));
 
-    // What we expect to happen.
-    $this->_ee->db->expectNever('delete');
-    $this->_ee->db->expectNever('insert');
-  
-    $this->assertIdentical(FALSE,
-      $this->_subject->save_supersticky_entry($entry));
-  }
+    // Missing criterion date from.
+    $entry_c = new Supersticky_entry(array(
+      'entry_id' => 10,
+      'criteria' => array(
+        new Supersticky_criterion(array(
+          'date_to'       => new DateTime('1944-02-18'),
+          'member_groups' => array(10, 20, 30)
+        ))
+      )
+    ));
 
+    // Missing criterion date to.
+    $entry_d = new Supersticky_entry(array(
+      'entry_id' => 10,
+      'criteria' => array(
+        new Supersticky_criterion(array(
+          'date_from'     => new DateTime('1935-06-14'),
+          'member_groups' => array(10, 20, 30)
+        ))
+      )
+    ));
 
-  public function xtest__save_supersticky_entry__fails_with_invalid_criterion()
-  {
-    // Create the dummy entry.
-    $criteria = array(
-      new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_DATE_RANGE,
-        'value' => '2011-01-01T00:00:01+0:00 2011-12-31T23:59:59+0:00'
-      )),
-      new Supersticky_criterion(array('value' => 999))
-    );
-
-    $entry_id = 123;
-
-    $entry = new Supersticky_entry(array(
-      'criteria' => $criteria,
-      'entry_id' => $entry_id
+    // Missing criterion member groups.
+    $entry_e = new Supersticky_entry(array(
+      'entry_id' => 10,
+      'criteria' => array(
+        new Supersticky_criterion(array(
+          'date_from' => new DateTime('1935-06-14'),
+          'date_to'   => new DateTime('1944-02-18')
+        ))
+      )
     ));
 
     // What we expect to happen.
@@ -588,24 +600,19 @@ class Test_supersticky_model extends Testee_unit_test_case {
     $this->_ee->db->expectNever('insert');
   
     $this->assertIdentical(FALSE,
-      $this->_subject->save_supersticky_entry($entry));
-  }
+      $this->_subject->save_supersticky_entry($entry_a));
 
-
-  public function xtest__save_supersticky_entry__fails_with_no_criteria()
-  {
-    // Create the dummy entry.
-    $entry = new Supersticky_entry(array(
-      'criteria' => array(),
-      'entry_id' => 123
-    ));
-
-    // What we expect to happen.
-    $this->_ee->db->expectNever('delete');
-    $this->_ee->db->expectNever('insert');
+    $this->assertIdentical(FALSE,
+      $this->_subject->save_supersticky_entry($entry_b));
   
     $this->assertIdentical(FALSE,
-      $this->_subject->save_supersticky_entry($entry));
+      $this->_subject->save_supersticky_entry($entry_c));
+  
+    $this->assertIdentical(FALSE,
+      $this->_subject->save_supersticky_entry($entry_d));
+
+    $this->assertIdentical(FALSE,
+      $this->_subject->save_supersticky_entry($entry_e));
   }
 
 

@@ -420,22 +420,37 @@ class Supersticky_model extends CI_Model {
       return FALSE;
     }
 
-    // We won't stand for any half-arsed criteria.
+    $insert_data = array(
+      'entry_id' => $entry->get_entry_id(),
+      'supersticky_criteria' => array()
+    );
+
+    // Check that the supplied criteria are valid.
     foreach ($criteria AS $criterion)
     {
-      if ( ! $criterion->get_type() OR ! $criterion->get_value())
+      if ( ! $criterion->get_date_from()
+        OR ! $criterion->get_date_to()
+        OR ! $criterion->get_member_groups()
+      )
       {
         return FALSE;
       }
+
+      $insert_data['supersticky_criteria'][] = array(
+        'date_from'     => $criterion->get_date_from()->format(DATE_W3C),
+        'date_to'       => $criterion->get_date_to()->format(DATE_W3C),
+        'member_groups' => $criterion->get_member_groups()
+      );
     }
 
+    $insert_data['supersticky_criteria']
+      = json_encode($insert_data['supersticky_criteria']);
+
+    // Delete any existing criteria for this entry.
     $this->EE->db->delete('supersticky_entries',
       array('entry_id' => $entry->get_entry_id()));
 
-    $insert_data = $entry->to_array();
-    $insert_data['supersticky_criteria'] = json_encode($insert_data['criteria']);
-    unset($insert_data['criteria']);
-
+    // Save the new SuperSticky Entry.
     $this->EE->db->insert('supersticky_entries', $insert_data);
 
     return TRUE;
