@@ -18,7 +18,7 @@
               <tr class="member_group_row">
                 <td>
                   <?php echo form_dropdown(
-                      'supersticky_criteria[0][member_group][]',
+                      'supersticky_criteria[0][member_groups][]',
                       $member_groups
                     );
                   ?>
