@@ -28,74 +28,98 @@ class Test_supersticky_criterion extends Testee_unit_test_case {
   }
 
 
-  public function test__set_type__valid_types_work()
+  public function test__set_date_from__valid_date_works()
   {
     $subject = new Supersticky_criterion();
 
-    $this->assertIdentical(Supersticky_criterion::TYPE_DATE_RANGE,
-      $subject->set_type(Supersticky_criterion::TYPE_DATE_RANGE));
-  
-    $this->assertIdentical(Supersticky_criterion::TYPE_MEMBER_GROUP,
-      $subject->set_type(Supersticky_criterion::TYPE_MEMBER_GROUP));
+    $test_date = new DateTime('1973-02-19');
+    $this->assertIdentical($test_date,
+      $subject->set_date_from($test_date));
   }
 
 
-  public function test__set_type__invalid_types_do_not_work()
+  public function test__set_date_from__invalid_argument_throws_error()
+  {
+    $subject = new Supersticky_criterion();
+
+    $test_date = new StdClass();
+    $this->expectError();
+    $subject->set_date_from($test_date);
+  }
+
+
+  public function test__set_date_to__valid_date_works()
+  {
+    $subject = new Supersticky_criterion();
+
+    $test_date = new DateTime('1973-02-19');
+    $this->assertIdentical($test_date,
+      $subject->set_date_to($test_date));
+  }
+
+
+  public function test__set_date_to__invalid_argument_throws_error()
+  {
+    $subject = new Supersticky_criterion();
+
+    $test_date = new StdClass();
+    $this->expectError();
+    $subject->set_date_to($test_date);
+  }
+
+
+  public function test__add_member_group__works_with_valid_group_id()
+  {
+    $subject = new Supersticky_criterion();
+
+    $this->assertIdentical(10,
+      array_pop($subject->add_member_group(10)));
+    $this->assertIdentical(101,
+      array_pop($subject->add_member_group('101')));
+    
+    $this->assertIdentical(2, count($subject->get_member_groups()));
+  }
+
+
+  public function test__add_member_group__ignores_invalid_group_ids()
+  {
+    $subject = new Supersticky_criterion();
+
+    $subject->add_member_group(NULL);
+    $subject->add_member_group(TRUE);
+    $subject->add_member_group(FALSE);
+    $subject->add_member_group(10);     // Valid.
+    $subject->add_member_group(array('101', '202'));
+    $subject->add_member_group(new StdClass());
+    $subject->add_member_group(0);
+
+    $this->assertIdentical(array(10), $subject->get_member_groups());
+  }
+
+
+  public function test__set_member_group__resets_member_groups_array()
   {
     $subject = new Supersticky_criterion(array(
-      'type' => Supersticky_criterion::TYPE_DATE_RANGE));
+      'member_groups' => array('10', '20', '30')
+    ));
 
-    $this->assertIdentical(Supersticky_criterion::TYPE_DATE_RANGE,
-      $subject->set_type('day_of_month'));
-  
-    $this->assertIdentical(Supersticky_criterion::TYPE_DATE_RANGE,
-      $subject->set_type(42));
-    
-    $this->assertIdentical(Supersticky_criterion::TYPE_DATE_RANGE,
-      $subject->set_type(new StdClass()));
-    
-    $this->assertIdentical(Supersticky_criterion::TYPE_DATE_RANGE,
-      $subject->set_type(array('apple', 'orange')));
-  }
+    $member_groups = array(15, 25, 35);
 
-
-  public function test__set_type__valid_values_work()
-  {
-    $subject = new Supersticky_criterion();
-
-    $this->assertIdentical(123.456, $subject->set_value(123.456));
-    $this->assertIdentical(123456, $subject->set_value(123456));
-    $this->assertIdentical('A, B', $subject->set_value('A, B'));
-  }
-
-
-  public function test__set_type__invalid_values_do_not_work()
-  {
-    $subject = new Supersticky_criterion(array('value' => 'ABC123'));
-
-    $this->assertIdentical('ABC123', $subject->set_value(new StdClass()));
-    $this->assertIdentical('ABC123', $subject->set_value(array('apple')));
-    $this->assertIdentical('ABC123', $subject->set_value(TRUE));
-    $this->assertIdentical('ABC123', $subject->set_value(FALSE));
-    $this->assertIdentical('ABC123', $subject->set_value(NULL));
+    $this->assertIdentical($member_groups,
+      $subject->set_member_groups($member_groups));
   }
 
 
   public function test__to_array__success()
   {
-    $props_array = array(
-      'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
-      'value' => 99
+    $criterion_array = array(
+      'date_from' => new DateTime('1973-02-19'),
+      'date_to'   => new DateTime('2011-10-03'),
+      'member_groups' => array(10, 20, 30)
     );
 
-    $subject          = new Supersticky_criterion($props_array);
-    $actual_result    = $subject->to_array();
-    $expected_result  = $props_array;
-    
-    ksort($actual_result);
-    ksort($expected_result);
-
-    $this->assertIdentical($expected_result, $actual_result);
+    $subject = new Supersticky_criterion($criterion_array);
+    $this->assertIdentical($criterion_array, $subject->to_array());
   }
 
 

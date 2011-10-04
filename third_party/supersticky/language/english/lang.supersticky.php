@@ -35,9 +35,10 @@ $lang = array(
 /* --------------------------------------------------------------
  * FIELDTYPE
  * ------------------------------------------------------------ */
-'lbl__criterion_type'   => 'Select criterion type&hellip;',
-'lbl__date_range'       => 'Date is between',
-'lbl__member_group'     => 'Visitor&rsquo;s member group is',
+'lbl__select_member_group'  => 'Select a member group&hellip;',
+'thd__date_from'            => 'From',
+'thd__date_to'              => 'To',
+'thd__member_groups'        => 'Make Entry Sticky For',
 
 
 // All done.

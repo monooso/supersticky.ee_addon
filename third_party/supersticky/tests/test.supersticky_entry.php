@@ -35,8 +35,9 @@ class Test_supersticky_entry extends Testee_unit_test_case {
   public function test__add_criterion__works_with_valid_criterion()
   {
     $criterion = new Supersticky_criterion(array(
-      'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
-      'value' => 999
+      'date_from'     => new DateTime('1935-06-14'),
+      'date_to'       => new DateTime('1944-02-18'),
+      'member_groups' => array(10, 20, 30)
     ));
 
     $subject = new Supersticky_entry();
@@ -52,12 +53,14 @@ class Test_supersticky_entry extends Testee_unit_test_case {
   {
     $criteria = array(
       new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
-        'value' => 999
+        'date_from'     => new DateTime('1935-06-14'),
+        'date_to'       => new DateTime('1944-02-18'),
+        'member_groups' => array(10, 20, 30)
       )),
       new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_DATE_RANGE,
-        'value' => '2011-01-01T09:00T0:00 2011-12-31T17:00T0:00'
+        'date_from'     => new DateTime('1973-02-19'),
+        'date_to'       => new DateTime('2011-10-03'),
+        'member_groups' => array(15, 25, 35)
       ))
     );
 
@@ -70,13 +73,15 @@ class Test_supersticky_entry extends Testee_unit_test_case {
   {
     $criteria = array(
       new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
-        'value' => 999
+        'date_from'     => new DateTime('1935-06-14'),
+        'date_to'       => new DateTime('1944-02-18'),
+        'member_groups' => array(10, 20, 30)
       )),
       array('apple', 'orange', 'pear'),
       new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_DATE_RANGE,
-        'value' => '2011-01-01T09:00T0:00 2011-12-31T17:00T0:00'
+        'date_from'     => new DateTime('1973-02-19'),
+        'date_to'       => new DateTime('2011-10-03'),
+        'member_groups' => array(15, 25, 35)
       )),
       new StdClass()
     );
@@ -93,15 +98,17 @@ class Test_supersticky_entry extends Testee_unit_test_case {
   {
     $start_criteria = array(
       new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
-        'value' => 999
+        'date_from'     => new DateTime('1935-06-14'),
+        'date_to'       => new DateTime('1944-02-18'),
+        'member_groups' => array(10, 20, 30)
       ))
     );
 
     $new_criteria = array(
       new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_DATE_RANGE,
-        'value' => '2011-01-01T09:00T0:00 2011-12-31T17:00T0:00'
+        'date_from'     => new DateTime('1973-02-19'),
+        'date_to'       => new DateTime('2011-10-03'),
+        'member_groups' => array(15, 25, 35)
       ))
     );
 
@@ -140,12 +147,14 @@ class Test_supersticky_entry extends Testee_unit_test_case {
   {
     $criteria = array(
       new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_MEMBER_GROUP,
-        'value' => 999
+        'date_from'     => new DateTime('1935-06-14'),
+        'date_to'       => new DateTime('1944-02-18'),
+        'member_groups' => array(10, 20, 30)
       )),
       new Supersticky_criterion(array(
-        'type'  => Supersticky_criterion::TYPE_DATE_RANGE,
-        'value' => '2011-01-01T09:00T0:00 2011-12-31T17:00T0:00'
+        'date_from'     => new DateTime('1973-02-19'),
+        'date_to'       => new DateTime('2011-10-03'),
+        'member_groups' => array(15, 25, 35)
       ))
     );
 

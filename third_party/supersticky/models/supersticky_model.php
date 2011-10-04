@@ -114,27 +114,6 @@ class Supersticky_model extends CI_Model {
 
 
   /**
-   * Returns an associative array of criterion type 'options', suitable
-   * for use with the 'form_dropdown' form helper method.
-   *
-   * @access  public
-   * @return  Array
-   */
-  public function get_criterion_type_options()
-  {
-    $lang = $this->EE->lang;
-
-    return array(
-      '' => $lang->line('lbl__criterion_type'),
-      Supersticky_criterion::TYPE_DATE_RANGE
-        => $lang->line('lbl__' .Supersticky_criterion::TYPE_DATE_RANGE),
-      Supersticky_criterion::TYPE_MEMBER_GROUP
-        => $lang->line('lbl__' .Supersticky_criterion::TYPE_MEMBER_GROUP)
-    );
-  }
-
-
-  /**
    * Returns an associative array of member groups, suitable for use
    * with the 'form_dropdown' form helper method.
    *
@@ -148,7 +127,8 @@ class Supersticky_model extends CI_Model {
       ->get_where('member_groups',
           array('site_id' => $this->get_site_id()));
 
-    $member_groups = array();
+    $member_groups = array('' => $this->EE->lang->line(
+      'lbl__select_member_group'));
 
     foreach ($db_groups->result_array() AS $db_group)
     {
@@ -253,7 +233,22 @@ class Supersticky_model extends CI_Model {
 
     foreach ($raw_criteria AS $criterion_data)
     {
-      $criteria[] = new Supersticky_criterion((array) $criterion_data);
+      if ( ! isset($criterion_data->date_from)
+        OR ! isset($criterion_data->date_to)
+        OR ! isset($criterion_data->member_groups)
+        OR ($date_from = date_create($criterion_data->date_from)) === FALSE
+        OR ($date_to = date_create($criterion_data->date_to)) === FALSE
+        OR ! is_array($criterion_data->member_groups)
+      )
+      {
+        continue;
+      }
+
+      $criteria[] = new Supersticky_criterion(array(
+        'date_from'     => $date_from,
+        'date_to'       => $date_to,
+        'member_groups' => $criterion_data->member_groups
+      ));
     }
 
     $result = new Supersticky_entry(array(
@@ -425,22 +420,37 @@ class Supersticky_model extends CI_Model {
       return FALSE;
     }
 
-    // We won't stand for any half-arsed criteria.
+    $insert_data = array(
+      'entry_id' => $entry->get_entry_id(),
+      'supersticky_criteria' => array()
+    );
+
+    // Check that the supplied criteria are valid.
     foreach ($criteria AS $criterion)
     {
-      if ( ! $criterion->get_type() OR ! $criterion->get_value())
+      if ( ! $criterion->get_date_from()
+        OR ! $criterion->get_date_to()
+        OR ! $criterion->get_member_groups()
+      )
       {
         return FALSE;
       }
+
+      $insert_data['supersticky_criteria'][] = array(
+        'date_from'     => $criterion->get_date_from()->format(DATE_W3C),
+        'date_to'       => $criterion->get_date_to()->format(DATE_W3C),
+        'member_groups' => $criterion->get_member_groups()
+      );
     }
 
+    $insert_data['supersticky_criteria']
+      = json_encode($insert_data['supersticky_criteria']);
+
+    // Delete any existing criteria for this entry.
     $this->EE->db->delete('supersticky_entries',
       array('entry_id' => $entry->get_entry_id()));
 
-    $insert_data = $entry->to_array();
-    $insert_data['supersticky_criteria'] = json_encode($insert_data['criteria']);
-    unset($insert_data['criteria']);
-
+    // Save the new SuperSticky Entry.
     $this->EE->db->insert('supersticky_entries', $insert_data);
 
     return TRUE;
@@ -527,52 +537,21 @@ class Supersticky_model extends CI_Model {
 
     foreach ($in_criteria AS $in_criterion)
     {
-      if ( ! is_array($in_criterion)
-        OR ! array_key_exists('type', $in_criterion)
+      if ( ! array_key_exists('date_from', $in_criterion)
+        OR ! array_key_exists('date_to', $in_criterion)
+        OR ! array_key_exists('member_groups', $in_criterion)
+        OR ($date_from = date_create($in_criterion['date_from'])) === FALSE
+        OR ($date_to = date_create($in_criterion['date_to'])) === FALSE
+        OR ! is_array($in_criterion['member_groups'])
       )
       {
         continue;
       }
 
-      switch ($in_criterion['type'])
-      {
-        case Supersticky_criterion::TYPE_DATE_RANGE:
-          if ( ! array_key_exists('date_range_from', $in_criterion)
-            OR ! array_key_exists('date_range_to', $in_criterion)
-            OR ! $in_criterion['date_range_from']
-            OR ! $in_criterion['date_range_to']
-          )
-          {
-            $in_value = '';
-          }
-          else
-          {
-            $in_value = $in_criterion['date_range_from']
-                          .Supersticky_criterion::DATE_RANGE_DELIMITER
-                          .$in_criterion['date_range_to'];
-          }
-          break;
-
-        case Supersticky_criterion::TYPE_MEMBER_GROUP:
-          $in_value = array_key_exists('member_group', $in_criterion)
-            ? $in_criterion['member_group']
-            : '';
-
-          break;
-
-        default:
-          $in_value = '';
-          break;
-      }
-
-      if ( ! $in_value)
-      {
-        continue;
-      }
-
       $new_entry->add_criterion(new Supersticky_criterion(array(
-        'type'  => $in_criterion['type'],
-        'value' => $in_value
+        'date_from'     => new DateTime($in_criterion['date_from']),
+        'date_to'       => new DateTime($in_criterion['date_to']),
+        'member_groups' => $in_criterion['member_groups']
       )));
     }
 

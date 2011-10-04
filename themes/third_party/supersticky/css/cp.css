@@ -10,35 +10,28 @@
 
 /* =forms
  * ------------------------------------------------------------ */
+#supersticky_ft input[type='text'],
 #supersticky_ft select {
-  width           : 97%;
+  width           : 95%;
 }
 
 
 /* =tables
  * ------------------------------------------------------------ */
-#supersticky_ft table {
-  -moz-border-radius    : 3px;
-  -webkit-border-radius : 3px;
-  border          : 1px solid rgba(0, 0, 0, 0.15);
-  border-radius   : 3px;
-  margin          : 10px 0;
+#supersticky_ft .mainTable {
+  margin-top      : 10px;
+}
+
+#supersticky_ft .member_groups {
+  border          : none;
+  padding         : 0;
   width           : 100%;
 }
 
-#supersticky_ft td {
-  border-top      : 1px solid rgba(0, 0, 0, 0.15);
-  padding         : 10px;
-  text-align      : left;
-  vertical-align  : middle;
-}
-
-#supersticky_ft tr:first-child td {
-  border-top      : none;
-}
-
-#supersticky_ft tr:nth-child(even) td {
-  background      : rgba(255, 255, 255, 0.65);
+#supersticky_ft .member_groups th,
+#supersticky_ft .member_groups td {
+  border          : none !important; /* EllisLab started the arms race. */
+  padding-bottom  : 2px;
 }
 
 
@@ -49,7 +42,6 @@
 /* =act
  * ------------------------------------------------------------ */
 #supersticky_ft .act {
-  padding-right   : 7px;
   text-align      : right;
   white-space     : nowrap;
   width           : 44px;
@@ -67,14 +59,6 @@
 #supersticky_ft .btn img {
   display         : inline-block;
   vertical-align  : middle;
-}
-
-/* =date_picker
- * ------------------------------------------------------------ */
-#supersticky_ft .date_picker {
-  display         : inline-block;
-  margin          : 0 5px;
-  width           : 35%;
 }
 
 
