@@ -12,50 +12,26 @@
     var $wrapper = $('#supersticky_ft');
 
     /**
-     * Initialises Roland.
-     *
-     * @access  private
-     * @return  void
-     */
-    function iniRoland() {
-      $wrapper.find('.criterion_roland')
-        .roland({
-          addRowClass     : 'criterion_add_row',
-          removeRowClass  : 'criterion_remove_row',
-          rowClass        : 'criterion_row'
-        })
-        .find('.criterion_row').each(function() {
-          var $iniRow = $(this);
-          
-          iniCriterion.apply($iniRow[0]);
-
-          $iniRow.find('.criterion_add_row')
-            .bind('postAddRow', function(event, eventData) {
-              console.log(eventData.newRow.html())
-              iniCriterion.apply(eventData.newRow[0]);
-            });
-        });
-
-      $wrapper.find('.member_group_roland')
-        .roland({
-          addRowClass     : 'member_group_add_row',
-          removeRowClass  : 'member_group_remove_row',
-          rowClass        : 'member_group_row'
-        });
-    };
-
-
-    /**
      * Initialises a single criterion.
      *
      * @access  private
      * @return  void
      */
     function iniCriterion() {
+      $(this).find('.member_group_row').slice(1).remove();
+      iniDatePickers.apply(this);
+    };
+
+
+    /**
+     * Initialises a criterion's date pickers.
+     *
+     * @access  private
+     * @return  void
+     */
+    function iniDatePickers() {
       var $row = $(this);
 
-      $row.find('.member_group_row').slice(1).remove();
-      
       var $datePickers = $row
         .find('[id$="[date_from]"], [id$="[date_to]"]')
         .datepicker('destroy')
@@ -78,11 +54,42 @@
               instance.settings
             );
 
-            console.log('Date Picker ID: ' + this.id);
-
             $datePickers.not(this).datepicker('option', option, date);
           },
           showAnim        : 'fadeIn'
+        });
+    };
+
+
+    /**
+     * Initialises Roland.
+     *
+     * @access  private
+     * @return  void
+     */
+    function iniRoland() {
+      $wrapper.find('.criterion_roland')
+        .roland({
+          addRowClass     : 'criterion_add_row',
+          removeRowClass  : 'criterion_remove_row',
+          rowClass        : 'criterion_row'
+        })
+        .find('.criterion_row').each(function() {
+          var $iniRow = $(this);
+          
+          iniDatePickers.apply(this);
+
+          $iniRow.find('.criterion_add_row')
+            .bind('postAddRow', function(event, eventData) {
+              iniCriterion.apply(eventData.newRow[0]);
+            });
+        });
+
+      $wrapper.find('.member_group_roland')
+        .roland({
+          addRowClass     : 'member_group_add_row',
+          removeRowClass  : 'member_group_remove_row',
+          rowClass        : 'member_group_row'
         });
     };
 
