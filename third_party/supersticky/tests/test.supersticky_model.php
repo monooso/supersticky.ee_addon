@@ -150,50 +150,45 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
     $criteria = array(
       new Supersticky_criterion(array(
-        'date_from'     => new DateTime('1973-02-19'),
-        'date_to'       => new DateTime('2011-10-03'),
+        'date_from'     => new DateTime('1973-02-19T15:00:00+0:00'),
+        'date_to'       => new DateTime('2011-10-03T17:23:00+0:00'),
         'member_groups' => array(10, 20, 30)
       )),
       new Supersticky_criterion(array(
-        'date_from'     => new DateTime('1935-06-14'),
-        'date_to'       => new DateTime('1944-02-18'),
+        'date_from'     => new DateTime('1935-06-14T21:00:59+01:00'),
+        'date_to'       => new DateTime('1944-02-18T22:22:00+02:00'),
         'member_groups' => array(15, 25, 35, 45)
       ))
     );
 
     // Build the database query result.
-    $db_row = (object) array(
-      'entry_id'  => (string) $entry_id,
-      'supersticky_criteria' => json_encode(array(
-        array(
-          'date_from' => $criteria[0]->get_date_from()->format(DATE_W3C),
-          'date_to'   => $criteria[0]->get_date_to()->format(DATE_W3C),
-          'member_groups' => $criteria[0]->get_member_groups()
-        ),
-        array(
-          'date_from' => $criteria[1]->get_date_from()->format(DATE_W3C),
-          'date_to'   => $criteria[1]->get_date_to()->format(DATE_W3C),
-          'member_groups' => $criteria[1]->get_member_groups()
-        )
-      ))
+    $db_rows = array(
+      (object) array(
+        'entry_id'      => (string) $entry_id,
+        'date_from'     => $criteria[0]->get_date_from()->format(DATE_W3C),
+        'date_to'       => $criteria[0]->get_date_to()->format(DATE_W3C),
+        'member_groups' => implode('|', $criteria[0]->get_member_groups())
+      ),
+      (object) array(
+        'entry_id'      => (string) $entry_id,
+        'date_from'     => $criteria[1]->get_date_from()->format(DATE_W3C),
+        'date_to'       => $criteria[1]->get_date_to()->format(DATE_W3C),
+        'member_groups' => implode('|', $criteria[1]->get_member_groups())
+      )
     );
 
     $db_result = $this->_get_mock('db_query');
   
     // What we expect to happen.
-    $this->_ee->db->expectOnce(
-      'select',
-      array('entry_id, supersticky_criteria')
-    );
+    $this->_ee->db->expectOnce('select',
+      array('entry_id, date_from, date_to, member_groups'));
 
-    $this->_ee->db->expectOnce(
-      'get_where',
-      array('supersticky_entries', array('entry_id' => $entry_id), 1)
-    );
+    $this->_ee->db->expectOnce('get_where',
+      array('supersticky_entries', array('entry_id' => $entry_id)));
 
     $this->_ee->db->setReturnReference('get_where', $db_result);
-    $db_result->setReturnValue('num_rows', 1);
-    $db_result->setReturnValue('row', $db_row);
+    $db_result->setReturnValue('num_rows', count($db_rows));
+    $db_result->setReturnValue('result', $db_rows);
 
     $expected_result = new Supersticky_entry(array(
       'entry_id' => $entry_id,
@@ -248,189 +243,101 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
-  public function test__get_supersticky_entry_by_id__criteria_is_not_array()
+  public function test__get_supersticky_entry_by_id__entries_have_invalid_dates()
   {
-    // Build our dummy data.
     $entry_id = 10;
-
-    // Build the database query result.
-    $db_row = (object) array(
-      'entry_id'  => (string) $entry_id,
-      'supersticky_criteria' => json_encode('apple')
-    );
-
     $db_result = $this->_get_mock('db_query');
-  
-    // What we expect to happen.
-    $this->_ee->db->expectOnce(
-      'select',
-      array('entry_id, supersticky_criteria')
-    );
 
-    $this->_ee->db->expectOnce(
-      'get_where',
-      array('supersticky_entries', array('entry_id' => $entry_id), 1)
+    $db_rows = array(
+      // Invalid date_from
+      (object) array(
+        'entry_id'      => (string) $entry_id,
+        'date_from'     => '',
+        'date_to'       => '20110101T01:02:03+04:00',
+        'member_groups' => '10|20|30'
+      ),
+      // Invalid date_to
+      (object) array(
+        'entry_id'      => (string) $entry_id,
+        'date_from'     =>  '20110101T01:02:03+04:00',
+        'date_to'       => 'wibble',
+        'member_groups' => '10|20|30'
+      )
     );
 
     $this->_ee->db->setReturnReference('get_where', $db_result);
-    $db_result->setReturnValue('num_rows', 1);
-    $db_result->setReturnValue('row', $db_row);
+    $db_result->setReturnValue('num_rows', count($db_rows));
+    $db_result->setReturnValue('result', $db_rows);
+  
+    /**
+     * Invalid rows should be ignored, so we get a SuperSticky Entry with the
+     * entry_id defined, and nothing else.
+     */
 
-    $this->assertIdentical(
-      FALSE,
-      $this->_subject->get_supersticky_entry_by_id($entry_id)
-    );
+    $expected_result  = new Supersticky_entry(array('entry_id' => $entry_id));
+    $actual_result    = $this->_subject->get_supersticky_entry_by_id($entry_id);
+
+    $this->assertIdentical($expected_result, $actual_result);
   }
 
 
-  public function test__get_supersticky_entry_by_id__handles_missing_criterion_data()
+  public function test__get_supersticky_entry_by_id__entry_has_no_member_groups()
   {
-    // Build our dummy data.
     $entry_id = 10;
-
-    $criteria = array(
-      new Supersticky_criterion(array(
-        'date_from'     => new DateTime('1973-02-19'),
-        'date_to'       => new DateTime('2011-10-03'),
-        'member_groups' => array(10, 20, 30)
-      ))
-    );
-
-    // Build the database query result.
-    $db_row = (object) array(
-      'entry_id' => (string) $entry_id,
-      'supersticky_criteria' => json_encode(array(
-        // Missing date_from.
-        array(
-          'date_to'       => $criteria[0]->get_date_to()->format(DATE_W3C),
-          'member_groups' => $criteria[0]->get_member_groups()
-        ),
-        // Missing date_to.
-        array(
-          'date_from'     => $criteria[0]->get_date_from()->format(DATE_W3C),
-          'member_groups' => $criteria[0]->get_member_groups()
-        ),
-        // Valid and complete.
-        array(
-          'date_to'       => $criteria[0]->get_date_to()->format(DATE_W3C),
-          'date_from'     => $criteria[0]->get_date_from()->format(DATE_W3C),
-          'member_groups' => $criteria[0]->get_member_groups()
-        ),
-        // Missing member_groups.
-        array(
-          'date_to'       => $criteria[0]->get_date_to()->format(DATE_W3C),
-          'date_from'     => $criteria[0]->get_date_from()->format(DATE_W3C),
-        )
-      ))
-    );
-
     $db_result = $this->_get_mock('db_query');
-  
-    // What we expect to happen.
-    $this->_ee->db->expectOnce(
-      'select',
-      array('entry_id, supersticky_criteria')
-    );
 
-    $this->_ee->db->expectOnce(
-      'get_where',
-      array('supersticky_entries', array('entry_id' => $entry_id), 1)
+    $db_rows = array(
+      (object) array(
+        'entry_id'      => (string) $entry_id,
+        'date_from'     => '20110101T01:02:03+04:00',
+        'date_to'       => '20110111T01:02:03+04:00',
+        'member_groups' => ''
+      )
     );
 
     $this->_ee->db->setReturnReference('get_where', $db_result);
-    $db_result->setReturnValue('num_rows', 1);
-    $db_result->setReturnValue('row', $db_row);
+    $db_result->setReturnValue('num_rows', count($db_rows));
+    $db_result->setReturnValue('result', $db_rows);
+  
+    /**
+     * Invalid rows should be ignored, so we get a SuperSticky Entry with the
+     * entry_id defined, and nothing else.
+     */
 
-    $expected_result = new Supersticky_entry(array(
-      'entry_id' => $entry_id,
-      'criteria' => $criteria
-    ));
+    $expected_result  = new Supersticky_entry(array('entry_id' => $entry_id));
+    $actual_result    = $this->_subject->get_supersticky_entry_by_id($entry_id);
 
-    $actual_result = $this->_subject->get_supersticky_entry_by_id($entry_id);
-
-    $this->assertTrue($actual_result instanceof Supersticky_entry);
-
-    $this->assertIdentical(
-      $expected_result->to_array(),
-      $actual_result->to_array()
-    );
+    $this->assertIdentical($expected_result, $actual_result);
   }
 
 
-  public function test__get_supersticky_entry_by_id__handles_invalid_criterion_data()
+  public function test__get_supersticky_entry_by_id__entry_has_invalid_member_groups()
   {
-    // Build our dummy data.
     $entry_id = 10;
-
-    $criteria = array(
-      new Supersticky_criterion(array(
-        'date_from'     => new DateTime('1973-02-19'),
-        'date_to'       => new DateTime('2011-10-03'),
-        'member_groups' => array(10, 20, 30)
-      ))
-    );
-
-    // Build the database query result.
-    $db_row = (object) array(
-      'entry_id' => (string) $entry_id,
-      'supersticky_criteria' => json_encode(array(
-        // Invalid date_from.
-        array(
-          'date_from'     => 'Not a date.',
-          'date_to'       => $criteria[0]->get_date_to()->format(DATE_W3C),
-          'member_groups' => $criteria[0]->get_member_groups()
-        ),
-        // Invalid date_to.
-        array(
-          'date_from'     => $criteria[0]->get_date_from()->format(DATE_W3C),
-          'date_to'       => 'Beware the ideas of March.',
-          'member_groups' => $criteria[0]->get_member_groups()
-        ),
-        // Valid and complete.
-        array(
-          'date_from'     => $criteria[0]->get_date_from()->format(DATE_W3C),
-          'date_to'       => $criteria[0]->get_date_to()->format(DATE_W3C),
-          'member_groups' => $criteria[0]->get_member_groups()
-        ),
-        // Invalid member_groups.
-        array(
-          'date_to'       => $criteria[0]->get_date_to()->format(DATE_W3C),
-          'date_from'     => $criteria[0]->get_date_from()->format(DATE_W3C),
-          'member_groups' => 'This should be an array.'
-        )
-      ))
-    );
-
     $db_result = $this->_get_mock('db_query');
-  
-    // What we expect to happen.
-    $this->_ee->db->expectOnce(
-      'select',
-      array('entry_id, supersticky_criteria')
-    );
 
-    $this->_ee->db->expectOnce(
-      'get_where',
-      array('supersticky_entries', array('entry_id' => $entry_id), 1)
+    $db_rows = array(
+      (object) array(
+        'entry_id'      => (string) $entry_id,
+        'date_from'     => '20110101T01:02:03+04:00',
+        'date_to'       => '20110111T01:02:03+04:00',
+        'member_groups' => '10|20|thirty|40'
+      )
     );
 
     $this->_ee->db->setReturnReference('get_where', $db_result);
-    $db_result->setReturnValue('num_rows', 1);
-    $db_result->setReturnValue('row', $db_row);
+    $db_result->setReturnValue('num_rows', count($db_rows));
+    $db_result->setReturnValue('result', $db_rows);
+  
+    /**
+     * Invalid rows should be ignored, so we get a SuperSticky Entry with the
+     * entry_id defined, and nothing else.
+     */
 
-    $expected_result = new Supersticky_entry(array(
-      'entry_id' => $entry_id,
-      'criteria' => $criteria
-    ));
+    $expected_result  = new Supersticky_entry(array('entry_id' => $entry_id));
+    $actual_result    = $this->_subject->get_supersticky_entry_by_id($entry_id);
 
-    $actual_result = $this->_subject->get_supersticky_entry_by_id($entry_id);
-
-    $this->assertTrue($actual_result instanceof Supersticky_entry);
-
-    $this->assertIdentical(
-      $expected_result->to_array(),
-      $actual_result->to_array()
-    );
+    $this->assertIdentical($expected_result, $actual_result);
   }
 
 
@@ -477,13 +384,26 @@ class Test_supersticky_model extends Testee_unit_test_case {
         'type'        => 'INT',
         'unsigned'    => TRUE
       ),
-      'supersticky_criteria' => array(
-        'type'        => 'TEXT'
+      'date_from' => array(
+        'constraint'  => 32,
+        'type'        => 'VARCHAR'
+      ),
+      'date_to' => array(
+        'constraint'  => 32,
+        'type'        => 'VARCHAR'
+      ),
+      'member_groups' => array(
+        'constraint'  => 64,
+        'type'        => 'VARCHAR'
       )
     );
 
     $this->_ee->dbforge->expectOnce('add_field', array($fields));
-    $this->_ee->dbforge->expectOnce('add_key', array('entry_id', TRUE));
+
+    $this->_ee->dbforge->expectCallCount('add_key', 3);
+    $this->_ee->dbforge->expectAt(0, 'add_key', array('entry_id'));
+    $this->_ee->dbforge->expectAt(1, 'add_key', array('date_from'));
+    $this->_ee->dbforge->expectAt(2, 'add_key', array('date_to'));
 
     $this->_ee->dbforge->expectOnce('create_table',
       array('supersticky_entries', TRUE));
@@ -494,16 +414,18 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__save_supersticky_entry__entry_saved()
   {
+    $db = $this->_ee->db;
+
     // Create the dummy entry.
     $criteria = array(
       new Supersticky_criterion(array(
-        'date_from'     => new DateTime('1973-02-19'),
-        'date_to'       => new DateTime('2011-10-03'),
+        'date_from'     => new DateTime('1973-02-19T01:01:01+01:00'),
+        'date_to'       => new DateTime('2011-10-03T02:02:02+02:00'),
         'member_groups' => array(10, 20, 30)
       )),
       new Supersticky_criterion(array(
-        'date_from'     => new DateTime('1935-06-14'),
-        'date_to'       => new DateTime('1944-02-18'),
+        'date_from'     => new DateTime('1935-06-14T03:03:03+03:00'),
+        'date_to'       => new DateTime('1944-02-18T04:04:04+04:00'),
         'member_groups' => array(15, 25, 35, 45)
       ))
     );
@@ -515,32 +437,30 @@ class Test_supersticky_model extends Testee_unit_test_case {
       'criteria' => $criteria
     ));
 
-    // Build the expected insert data.
-    $insert_criteria = array();
-
-    foreach ($criteria AS $criterion)
-    {
-      $insert_criteria[] = array(
-        'date_from'     => $criterion->get_date_from()->format(DATE_W3C),
-        'date_to'       => $criterion->get_date_to()->format(DATE_W3C),
-        'member_groups' => $criterion->get_member_groups()
-      );
-    }
-
-    $insert_data = array(
-      'entry_id' => $entry_id,
-      'supersticky_criteria' => json_encode($insert_criteria)
-    );
-
-    // What we expect to happen.
-    $this->_ee->db->expectOnce('delete', array(
+    // Delete any existing criteria.
+    $db->expectOnce('delete', array(
       'supersticky_entries',
       array('entry_id' => $entry_id)
     ));
 
-    $this->_ee->db->expectOnce('insert', array(
-      'supersticky_entries', $insert_data));
-  
+    // Add the new criteria.
+    $db->expectCallCount('insert', count($criteria));
+
+    for ($count = 0; $count < count($criteria); $count++)
+    {
+      $criterion = $criteria[$count];
+
+      $db->expectAt($count, 'insert', array(
+        'supersticky_entries',
+        array(
+          'entry_id'      => $entry_id,
+          'date_from'     => $criterion->get_date_from()->format(DATE_W3C),
+          'date_to'       => $criterion->get_date_to()->format(DATE_W3C),
+          'member_groups' => implode('|', $criterion->get_member_groups())
+        )
+      ));
+    }
+
     $this->assertIdentical(TRUE,
       $this->_subject->save_supersticky_entry($entry));
   }

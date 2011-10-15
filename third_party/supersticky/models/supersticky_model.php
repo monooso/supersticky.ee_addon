@@ -213,50 +213,69 @@ class Supersticky_model extends CI_Model {
     }
 
     $db_result = $this->EE->db
-      ->select('entry_id, supersticky_criteria')
-      ->get_where('supersticky_entries', array('entry_id' => $entry_id), 1);
+      ->select('entry_id, date_from, date_to, member_groups')
+      ->get_where('supersticky_entries', array('entry_id' => $entry_id));
 
-    if ($db_result->num_rows() !== 1)
+    if ( ! $db_result->num_rows())
     {
       return FALSE;
     }
 
-    $entry_id     = $db_result->row()->entry_id;
-    $raw_criteria = json_decode($db_result->row()->supersticky_criteria);
-    $criteria     = array();
+    $supersticky_entry = new Supersticky_entry(array(
+      'entry_id' => $entry_id));
 
-    // This should never happen, but just in case...
-    if ( ! is_array($raw_criteria))
+    foreach ($db_result->result() AS $row)
     {
-      return FALSE;
-    }
+      /**
+       * TRICKY:
+       * An empty date string will be converted to the current date, so we
+       * need to perform a separate check here.
+       */
 
-    foreach ($raw_criteria AS $criterion_data)
-    {
-      if ( ! isset($criterion_data->date_from)
-        OR ! isset($criterion_data->date_to)
-        OR ! isset($criterion_data->member_groups)
-        OR ($date_from = date_create($criterion_data->date_from)) === FALSE
-        OR ($date_to = date_create($criterion_data->date_to)) === FALSE
-        OR ! is_array($criterion_data->member_groups)
-      )
+      if ( ! $row->date_from OR ! $row->date_to)
       {
         continue;
       }
 
-      $criteria[] = new Supersticky_criterion(array(
+      // Attempt to wrest the dates in valid DateTime objects.
+      try
+      {
+        $date_from  = new DateTime($row->date_from);
+        $date_to    = new DateTime($row->date_to);
+      }
+      catch (Exception $e)
+      {
+        continue;
+      }
+
+      // Do we have valid member groups.
+      $invalid_member_group = FALSE;
+
+      foreach (($member_groups = explode('|', $row->member_groups))
+        AS $member_group
+      )
+      {
+        if ( ! valid_int($member_group, 1))
+        {
+          // Oh for named continues.
+          $invalid_member_group = TRUE;
+          break;
+        }
+      }
+
+      if ($invalid_member_group)
+      {
+        continue;
+      }
+
+      $supersticky_entry->add_criterion(new Supersticky_criterion(array(
         'date_from'     => $date_from,
         'date_to'       => $date_to,
-        'member_groups' => $criterion_data->member_groups
-      ));
+        'member_groups' => $member_groups
+      )));
     }
 
-    $result = new Supersticky_entry(array(
-      'entry_id' => $db_result->row()->entry_id,
-      'criteria' => $criteria
-    ));
-
-    return $result;
+    return $supersticky_entry;
   }
 
 
@@ -325,13 +344,24 @@ class Supersticky_model extends CI_Model {
         'type'        => 'INT',
         'unsigned'    => TRUE
       ),
-      'supersticky_criteria' => array(
-        'type'        => 'TEXT'
+      'date_from' => array(
+        'constraint'  => 32,
+        'type'        => 'VARCHAR'
+      ),
+      'date_to' => array(
+        'constraint'  => 32,
+        'type'        => 'VARCHAR'
+      ),
+      'member_groups' => array(
+        'constraint'  => 64,
+        'type'        => 'VARCHAR'
       )
     );
 
     $this->EE->dbforge->add_field($fields);
-    $this->EE->dbforge->add_key('entry_id', TRUE);
+    $this->EE->dbforge->add_key('entry_id');
+    $this->EE->dbforge->add_key('date_from');
+    $this->EE->dbforge->add_key('date_to');
     $this->EE->dbforge->create_table('supersticky_entries', TRUE);
   }
 
@@ -413,17 +443,12 @@ class Supersticky_model extends CI_Model {
   public function save_supersticky_entry(Supersticky_entry $entry)
   {
     // Can't do anything without an entry ID or criteria.
-    if ( ! $entry->get_entry_id()
+    if ( ! ($entry_id = $entry->get_entry_id())
       OR ! ($criteria = $entry->get_criteria())
     )
     {
       return FALSE;
     }
-
-    $insert_data = array(
-      'entry_id' => $entry->get_entry_id(),
-      'supersticky_criteria' => array()
-    );
 
     // Check that the supplied criteria are valid.
     foreach ($criteria AS $criterion)
@@ -435,23 +460,22 @@ class Supersticky_model extends CI_Model {
       {
         return FALSE;
       }
-
-      $insert_data['supersticky_criteria'][] = array(
-        'date_from'     => $criterion->get_date_from()->format(DATE_W3C),
-        'date_to'       => $criterion->get_date_to()->format(DATE_W3C),
-        'member_groups' => $criterion->get_member_groups()
-      );
     }
 
-    $insert_data['supersticky_criteria']
-      = json_encode($insert_data['supersticky_criteria']);
-
-    // Delete any existing criteria for this entry.
+    // Delete any existing rows for this entry.
     $this->EE->db->delete('supersticky_entries',
-      array('entry_id' => $entry->get_entry_id()));
+      array('entry_id' => $entry_id));
 
-    // Save the new SuperSticky Entry.
-    $this->EE->db->insert('supersticky_entries', $insert_data);
+    // Create the new rows.
+    foreach ($criteria AS $criterion)
+    {
+      $this->EE->db->insert('supersticky_entries', array(
+        'entry_id'      => $entry_id,
+        'date_from'     => $criterion->get_date_from()->format(DATE_W3C),
+        'date_to'       => $criterion->get_date_to()->format(DATE_W3C),
+        'member_groups' => implode('|', $criterion->get_member_groups())
+      ));
+    }
 
     return TRUE;
   }
