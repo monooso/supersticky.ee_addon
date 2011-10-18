@@ -198,6 +198,35 @@ class Supersticky_model extends CI_Model {
 
 
   /**
+   * Retrieves the SuperSticky Entries that are active on the given date.
+   *
+   * @access  public
+   * @param   DateTime    $date     The date we're looking for.
+   * @return  void
+   */
+  public function get_supersticky_entries_for_date(DateTime $date)
+  {
+    /**
+     * Given that SuperSticky entries don't have any inherent ordering,
+     * we order results by:
+     *
+     * 1. Whether the entry is 'normal' sticky.
+     * 2. The entry date.
+     */
+
+    /*
+      SELECT se.*
+      FROM exp_supersticky_entries AS se
+      INNER JOIN exp_channel_titles AS e
+      ON e.entry_id = se.entry_id
+      WHERE se.date_from <= '2011-10-14T09:00:00+0:00'
+      AND se.date_to >= '2011-10-14T09:00:00+0:00'
+      ORDER BY e.sticky DESC, e.entry_date ASC
+    */
+  }
+
+
+  /**
    * Retrieves a SuperSticky Entry, given the entry ID.
    *
    * @access  public
