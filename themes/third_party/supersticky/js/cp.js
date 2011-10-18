@@ -18,8 +18,7 @@
      * @return  void
      */
     function iniCriterion() {
-      $(this).find('.member_group_row').slice(1).remove();
-      iniDatePickers.apply(this);
+      $(this).find('.member_group_row').slice(1).remove()
     };
 
 
@@ -82,6 +81,7 @@
           $iniRow.find('.criterion_add_row')
             .bind('postAddRow', function(event, eventData) {
               iniCriterion.apply(eventData.newRow[0]);
+              iniDatePickers.apply(eventData.newRow[0]);
             });
         });
 
