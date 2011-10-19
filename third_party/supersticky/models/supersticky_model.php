@@ -58,6 +58,65 @@ class Supersticky_model extends CI_Model {
   }
 
 
+  /**
+   * Parses an exp_supersticky_entries row into a Supersticky_criterion object.
+   *
+   * @access  private
+   * @param   StdClass    $row    The database row.
+   * @return  Supersticky_criterion|FALSE
+   */
+  private function _parse_supersticky_entries_db_row(StdClass $row)
+  {
+    /**
+     * TRICKY:
+     * An empty date string will be converted to the current date, so we
+     * need to perform a separate check here.
+     */
+
+    if ( ! $row->date_from OR ! $row->date_to)
+    {
+      return FALSE;
+    }
+
+    /**
+     * Attempt to wrest the dates in valid DateTime objects.
+     *
+     * TRICKY:
+     * PHP < 5.3.x does not throw an Exception when you attempt to create
+     * a DateTime object with an invalid constructor argument, despite
+     * what the documentation might suggest.
+     *
+     * If this needs to work with PHP < 5.2.x, it will need to be rewritten.
+     */
+
+    try
+    {
+      $date_from  = new DateTime($row->date_from);
+      $date_to    = new DateTime($row->date_to);
+    }
+    catch (Exception $e)
+    {
+      return FALSE;
+    }
+
+    foreach (($member_groups = explode('|', $row->member_groups))
+      AS $member_group
+    )
+    {
+      if ( ! valid_int($member_group, 1))
+      {
+        return FALSE;
+      }
+    }
+
+    return new Supersticky_criterion(array(
+      'date_from'     => $date_from,
+      'date_to'       => $date_to,
+      'member_groups' => $member_groups
+    ));
+  }
+
+
 
   /* --------------------------------------------------------------
    * PUBLIC METHODS
@@ -202,7 +261,7 @@ class Supersticky_model extends CI_Model {
    *
    * @access  public
    * @param   DateTime    $date     The date we're looking for.
-   * @return  void
+   * @return  Array
    */
   public function get_supersticky_entries_for_date(DateTime $date)
   {
@@ -214,15 +273,45 @@ class Supersticky_model extends CI_Model {
      * 2. The entry date.
      */
 
-    /*
-      SELECT se.*
-      FROM exp_supersticky_entries AS se
-      INNER JOIN exp_channel_titles AS e
-      ON e.entry_id = se.entry_id
-      WHERE se.date_from <= '2011-10-14T09:00:00+0:00'
-      AND se.date_to >= '2011-10-14T09:00:00+0:00'
-      ORDER BY e.sticky DESC, e.entry_date ASC
-    */
+    $db = $this->EE->db;
+
+    $db_result = $db->select('supersticky_entries.*')
+      ->join('channel_titles',
+        'channel_titles.entry_id = supersticky_entries.entry_id', 'inner') 
+      ->where(array(
+          'supersticky_entries.date_from <=' => $date->format(DATE_W3C),
+          'supersticky_entries.date_to >=' => $date->format(DATE_W3C)
+        ))
+      ->order_by('channel_titles.sticky DESC, channel_titles.entry_date ASC')
+      ->get('supersticky_entries');
+
+    $return = $entries = array();
+
+    // If there are no query results, we're done.
+    if ( ! $db_result->num_rows())
+    {
+      return array();
+    }
+
+    // Parse all the criteria.
+    foreach ($db_result->result() AS $row)
+    {
+      if ($criterion = $this->_parse_supersticky_entries_db_row($row))
+      {
+        $entries[$row->entry_id][] = $criterion;
+      }
+    }
+
+    // Build the return array, grouping all criteria by entry ID.
+    foreach ($entries AS $entry_id => $criteria)
+    {
+      $return[] = new Supersticky_entry(array(
+        'entry_id' => $entry_id,
+        'criteria' => $criteria
+      ));
+    }
+
+    return $return;
   }
 
 
@@ -255,53 +344,10 @@ class Supersticky_model extends CI_Model {
 
     foreach ($db_result->result() AS $row)
     {
-      /**
-       * TRICKY:
-       * An empty date string will be converted to the current date, so we
-       * need to perform a separate check here.
-       */
-
-      if ( ! $row->date_from OR ! $row->date_to)
+      if ($criterion = $this->_parse_supersticky_entries_db_row($row))
       {
-        continue;
+        $supersticky_entry->add_criterion($criterion);
       }
-
-      // Attempt to wrest the dates in valid DateTime objects.
-      try
-      {
-        $date_from  = new DateTime($row->date_from);
-        $date_to    = new DateTime($row->date_to);
-      }
-      catch (Exception $e)
-      {
-        continue;
-      }
-
-      // Do we have valid member groups.
-      $invalid_member_group = FALSE;
-
-      foreach (($member_groups = explode('|', $row->member_groups))
-        AS $member_group
-      )
-      {
-        if ( ! valid_int($member_group, 1))
-        {
-          // Oh for named continues.
-          $invalid_member_group = TRUE;
-          break;
-        }
-      }
-
-      if ($invalid_member_group)
-      {
-        continue;
-      }
-
-      $supersticky_entry->add_criterion(new Supersticky_criterion(array(
-        'date_from'     => $date_from,
-        'date_to'       => $date_to,
-        'member_groups' => $member_groups
-      )));
     }
 
     return $supersticky_entry;

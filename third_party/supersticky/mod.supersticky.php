@@ -80,7 +80,7 @@ class Supersticky extends Channel {
       {
         if (in_array($group_id, $criterion->get_member_groups()))
         {
-          $ss_items[] = ($count === 1)
+          $ss_items[] = (count($ss_items) === 0)
             ? "SELECT {$ss_entry->get_entry_id()} AS entry_id,
               {$count} AS order_index"
             : "SELECT {$ss_entry->get_entry_id()}, {$count}";
@@ -90,15 +90,22 @@ class Supersticky extends Channel {
       }
     }
 
-    if ($ss_items)
+    /**
+     * If there are no SuperSticky entries for the current date and member
+     * group, we're done.
+     */
+
+    if ( ! $ss_items)
     {
-      $ss_items[0] .= (count($ss_items) > 1 ? ' UNION ALL' : '');
-      $where_sql = 'LEFT JOIN (' .implode(' ', $ss_items) .')
-        AS ss ON ss.entry_id = t.entry_id WHERE';
+      return;
     }
+
+    $ss_items[0] .= (count($ss_items) > 1 ? ' UNION ALL' : '');
 
     $select_sql = 'SELECT IFNULL(ss.order_index, 999999) AS ss_order_index,';
     $order_sql  = 'ORDER BY ss_order_index ASC,';
+    $where_sql  = 'LEFT JOIN (' .implode(' ', $ss_items) .')
+      AS ss ON ss.entry_id = t.entry_id WHERE';
 
     $sql = str_replace('SELECT', $select_sql, $sql);
     $sql = str_replace('ORDER BY', $order_sql, $sql);

@@ -143,6 +143,187 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
+  public function test__get_supersticky_entries_for_date__works()
+  {
+    $db         = $this->_ee->db;
+    $date       = new DateTime('20110615T12:00:00+00:00');
+    $date_from  = new DateTime('20110101T00:00:01+00:00');
+    $date_to    = new DateTime('20111231T23:59:00+00:00');
+
+    $db->expectOnce('select', array('supersticky_entries.*'));
+
+    $db->expectOnce(
+      'join',
+      array(
+        'channel_titles',
+        'channel_titles.entry_id = supersticky_entries.entry_id',
+        'inner'
+      )
+    );
+
+    $db->expectOnce('where', array(array(
+      'supersticky_entries.date_from <=' => $date->format(DATE_W3C),
+      'supersticky_entries.date_to >=' => $date->format(DATE_W3C)
+    )));
+
+    $db->expectOnce('order_by',
+      array('channel_titles.sticky DESC, channel_titles.entry_date ASC'));
+
+    $db->expectOnce('get', array('supersticky_entries'));
+  
+    $db_result = $this->_get_mock('db_query');
+    $db_rows = array(
+      (object) array(
+        'entry_id'  => '10',
+        'date_from' => $date_from->format(DATE_W3C),
+        'date_to'   => $date_to->format(DATE_W3C),
+        'member_groups' => '10|20|30'
+      ),
+      (object) array(
+        'entry_id'  => '20',
+        'date_from' => $date_from->format(DATE_W3C),
+        'date_to'   => $date_to->format(DATE_W3C),
+        'member_groups' => '40'
+      ),
+      (object) array(
+        'entry_id'  => '30',
+        'date_from' => $date_from->format(DATE_W3C),
+        'date_to'   => $date_to->format(DATE_W3C),
+        'member_groups' => '50|60'
+      )
+    );
+
+    $db->setReturnReference('get', $db_result);
+    $db_result->setReturnValue('num_rows', count($db_rows));
+    $db_result->setReturnValue('result', $db_rows);
+
+    $expected_result = array(
+      new Supersticky_entry(array(
+        'entry_id'  => $db_rows[0]->entry_id,
+        'criteria'  => array(
+          new Supersticky_criterion(array(
+            'date_from' => $date_from,
+            'date_to'   => $date_to,
+            'member_groups' => explode('|', $db_rows[0]->member_groups)
+          ))
+        )
+      )),
+      new Supersticky_entry(array(
+        'entry_id'  => $db_rows[1]->entry_id,
+        'criteria'  => array(
+          new Supersticky_criterion(array(
+            'date_from' => $date_from,
+            'date_to'   => $date_to,
+            'member_groups' => explode('|', $db_rows[1]->member_groups)
+          ))
+        )
+      )),
+      new Supersticky_entry(array(
+        'entry_id'  => $db_rows[2]->entry_id,
+        'criteria'  => array(
+          new Supersticky_criterion(array(
+            'date_from' => $date_from,
+            'date_to'   => $date_to,
+            'member_groups' => explode('|', $db_rows[2]->member_groups)
+          ))
+        )
+      ))
+    );
+
+    $this->assertIdentical(
+      $expected_result,
+      $this->_subject->get_supersticky_entries_for_date($date)
+    );
+  }
+
+
+  public function test__get_supersticky_entries_for_date__groups_items_with_same_entry_id()
+  {
+    $db         = $this->_ee->db;
+    $date       = new DateTime('20110615T12:00:00+00:00');
+    $date_from  = new DateTime('20110101T00:00:01+00:00');
+    $date_to    = new DateTime('20111231T23:59:00+00:00');
+
+    $db_result = $this->_get_mock('db_query');
+    $db_rows = array(
+      (object) array(
+        'entry_id'  => '10',
+        'date_from' => $date_from->format(DATE_W3C),
+        'date_to'   => $date_to->format(DATE_W3C),
+        'member_groups' => '10|20|30'
+      ),
+      (object) array(
+        'entry_id'  => '10',
+        'date_from' => $date_from->format(DATE_W3C),
+        'date_to'   => $date_to->format(DATE_W3C),
+        'member_groups' => '40'
+      ),
+      (object) array(
+        'entry_id'  => '20',
+        'date_from' => $date_from->format(DATE_W3C),
+        'date_to'   => $date_to->format(DATE_W3C),
+        'member_groups' => '50|60'
+      )
+    );
+
+    $db->setReturnReference('get', $db_result);
+    $db_result->setReturnValue('num_rows', count($db_rows));
+    $db_result->setReturnValue('result', $db_rows);
+
+    $expected_result = array(
+      new Supersticky_entry(array(
+        'entry_id'  => $db_rows[0]->entry_id,
+        'criteria'  => array(
+          new Supersticky_criterion(array(
+            'date_from' => $date_from,
+            'date_to'   => $date_to,
+            'member_groups' => explode('|', $db_rows[0]->member_groups)
+          )),
+          new Supersticky_criterion(array(
+            'date_from' => $date_from,
+            'date_to'   => $date_to,
+            'member_groups' => explode('|', $db_rows[1]->member_groups)
+          ))
+        )
+      )),
+      new Supersticky_entry(array(
+        'entry_id'  => $db_rows[2]->entry_id,
+        'criteria'  => array(
+          new Supersticky_criterion(array(
+            'date_from' => $date_from,
+            'date_to'   => $date_to,
+            'member_groups' => explode('|', $db_rows[2]->member_groups)
+          ))
+        )
+      ))
+    );
+
+    $this->assertIdentical(
+      $expected_result,
+      $this->_subject->get_supersticky_entries_for_date($date)
+    );
+  }
+
+
+  public function test__get_supersticky_entries_for_date__works_with_no_results()
+  {
+    $db   = $this->_ee->db;
+    $date = new DateTime('20110615T12:00:00+00:00');
+
+    $db_result = $this->_get_mock('db_query');
+    $db_rows = array();
+
+    $db->setReturnReference('get', $db_result);
+    $db_result->setReturnValue('num_rows', count($db_rows));
+    $db_result->setReturnValue('result', $db_rows);
+
+    $this->assertIdentical(
+      array(),
+      $this->_subject->get_supersticky_entries_for_date($date)
+    );
+  }
+
+
   public function test__get_supersticky_entry_by_id__entry_found()
   {
     // Build our dummy data.
