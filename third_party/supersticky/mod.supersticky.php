@@ -8,7 +8,10 @@
  * @package         Supersticky
  */
 
-require_once APPPATH .'modules/channel/mod.channel.php';
+if ( ! class_exists('Channel'))
+{
+  require_once APPPATH .'modules/channel/mod.channel.php';
+}
 
 class Supersticky extends Channel {
     
@@ -48,7 +51,7 @@ class Supersticky extends Channel {
    */
   public function build_sql_query($qstring = '')
   {
-    // parent::build_sql_query($qstring);
+    parent::build_sql_query($qstring);
 
     $group_id = $this->EE->session->userdata('group_id');
     $sql      = $this->sql;
@@ -56,6 +59,12 @@ class Supersticky extends Channel {
     // Retrieve all the SuperSticky criteria for the current date.
     $ss_entries = $this->_model->get_supersticky_entries_for_date(
       new DateTime());
+
+    // If there are no SuperSticky entries for the current date, we're done.
+    if ( ! $ss_entries)
+    {
+      return;
+    }
 
     $ss_length  = count($ss_entries);
     $ss_items   = array();
@@ -83,11 +92,7 @@ class Supersticky extends Channel {
 
     if ($ss_items)
     {
-      if (count($ss_items) > 1)
-      {
-        $ss_items[0] .= ' UNION ALL';
-      }
-
+      $ss_items[0] .= (count($ss_items) > 1 ? ' UNION ALL' : '');
       $where_sql = 'LEFT JOIN (' .implode(' ', $ss_items) .')
         AS ss ON ss.entry_id = t.entry_id WHERE';
     }
