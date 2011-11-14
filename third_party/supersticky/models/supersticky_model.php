@@ -363,26 +363,10 @@ class Supersticky_model extends CI_Model {
   public function install_module()
   {
     $this->install_module_register();
-    $this->install_module_actions();
     $this->install_module_tables();
     $this->install_module_tabs();
 
     return TRUE;
-  }
-
-
-  /**
-   * Register the module actions in the database.
-   *
-   * @access  public
-   * @return  void
-   */
-  public function install_module_actions()
-  {
-    $this->EE->db->insert('actions', array(
-      'class'     => ucfirst($this->get_package_name()),
-      'method'    => ''
-    ));
   }
 
 
@@ -395,7 +379,7 @@ class Supersticky_model extends CI_Model {
   public function install_module_register()
   {
     $this->EE->db->insert('modules', array(
-      'has_cp_backend'      => 'y',
+      'has_cp_backend'      => 'n',
       'has_publish_fields'  => 'y',
       'module_name'         => ucfirst($this->get_package_name()),
       'module_version'      => $this->get_package_version()
@@ -580,7 +564,6 @@ class Supersticky_model extends CI_Model {
     $this->EE->db->delete('module_member_groups',
       array('module_id' => $db_module->row()->module_id));
 
-    $this->EE->db->delete('actions', array('class' => $module_name));
     $this->EE->db->delete('modules', array('module_name' => $module_name));
 
     // Drop the SuperSticky database table.
