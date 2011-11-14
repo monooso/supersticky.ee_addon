@@ -27,8 +27,6 @@ class Supersticky_ft extends EE_Fieldtype {
     'version' => '0.1.0'
   );
 
-  public $required_by = array('module');
-
 
   /* --------------------------------------------------------------
    * PUBLIC METHODS
