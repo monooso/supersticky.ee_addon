@@ -18,7 +18,21 @@
      * @return  void
      */
     function iniCriterion() {
-      $(this).find('.member_group_row').slice(1).remove()
+      // Initialise the 'member groups' Roland within the criterion row.
+      var $criterion  = $(this),
+          options     = {
+            addRowClass     : 'member_group_add_row',
+            removeRowClass  : 'member_group_remove_row',
+            rowClass        : 'member_group_row'
+          };
+
+      $criterion.find('.member_group_row').slice(1).remove();
+
+      $.fn.roland.updateIndexes(
+        $criterion.find('.member_group_roland'), options);
+
+      $.fn.roland.updateNav(
+        $criterion.find('.member_group_roland'), options);
     };
 
 

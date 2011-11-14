@@ -13,18 +13,19 @@
 
     return this.each(function() {
       var $container = $(this);
-      updateIndexes($container, opts);
-      updateNav($container, opts);
+
+      $.fn.roland.updateIndexes($container, opts);
+      $.fn.roland.updateNav($container, opts);
 
       // Adds a row.
       $container.find('.' + opts.addRowClass).bind('click', function(e) {
         e.preventDefault();
 
-        var $link       = $(this);
-        var $parentRow  = $link.closest('.' + opts.rowClass);
-        var $lastRow    = $container.find('.' + opts.rowClass + ':last');
-        var $cloneRow   = $lastRow.clone(true);
-        var eventData   = {};
+        var $link       = $(this),
+            $parentRow  = $link.closest('.' + opts.rowClass),
+            $lastRow    = $container.find('.' + opts.rowClass + ':last'),
+            $cloneRow   = $lastRow.clone(true),
+            eventData   = {};
 
         // Reset the field values.
         $cloneRow.find('input').each(function() {
@@ -64,8 +65,8 @@
           ? $parentRow.after($cloneRow) : $lastRow.append($cloneRow);
 
         // Update everything.
-        updateIndexes($container, opts);
-        updateNav($container, opts);
+        $.fn.roland.updateIndexes($container, opts);
+        $.fn.roland.updateNav($container, opts);
 
         // Post-add event.
         if ($link.data('events').postAddRow !== undefined) {
@@ -89,8 +90,8 @@
         $row.remove();
 
         // Update everything.
-        updateIndexes($container, opts);
-        updateNav($container, opts);
+        $.fn.roland.updateIndexes($container, opts);
+        $.fn.roland.updateNav($container, opts);
       });
     });
   };
@@ -105,26 +106,28 @@
 
 
   /* ------------------------------------------
-   * PRIVATE METHODS
+   * PUBLIC METHODS
    * -----------------------------------------*/
 
   // Updates the indexes of any form elements.
-  function updateIndexes($container, opts) {
+  $.fn.roland.updateIndexes = function($container, opts) {
     $container.find('.' + opts.rowClass).each(function(rowCount) {
-      regex = /^([a-z_]+)\[(?:[0-9]+)\](.*)$/;
+      var regex = /^([a-z_]+)\[(?:[0-9]+)\](.*)$/;
 
       $(this).find('input, select, textarea').each(function(fieldCount) {
-        $field = $(this);
+        var $field = $(this),
+            fieldId,
+            fieldName;
 
         if ($field.attr('id')) {
-          var fieldId = $field.attr('id')
+          fieldId = $field.attr('id')
             .replace(regex, '$1[' + rowCount + ']$2');
 
           $field.attr('id', fieldId);
         }
 
         if ($field.attr('name')) {
-          var fieldName = $field.attr('name')
+          fieldName = $field.attr('name')
             .replace(regex, '$1[' + rowCount + ']$2');
 
           $field.attr('name', fieldName);
@@ -134,9 +137,10 @@
   };
 
   // Updates the navigation buttons.
-  function updateNav($container, opts) {
-    var $remove = $container.find('.' + opts.removeRowClass);
-    var $rows = $container.find('.' + opts.rowClass);
+  $.fn.roland.updateNav = function($container, opts) {
+    var $remove = $container.find('.' + opts.removeRowClass),
+        $rows   = $container.find('.' + opts.rowClass);
+
     $rows.size() == 1 ? $remove.hide() : $remove.show();
   };
 
