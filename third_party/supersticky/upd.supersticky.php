@@ -10,69 +10,70 @@
 
 class Supersticky_upd {
     
-    private $_ee;
-    private $_model;
-    public $version;
-    
-    
-    /* --------------------------------------------------------------
-     * PUBLIC METHODS
-     * ------------------------------------------------------------ */
-    
-    /**
-     * Constructor.
-     *
-     * @access  public
-     * @return  void
-     */
-    public function __construct()
-    {
-        $this->_ee =& get_instance();
-        $this->_ee->load->add_package_path(PATH_THIRD .'supersticky/');
+  private $EE;
+  private $_model;
+  public $version;
+  
+  
+  /* --------------------------------------------------------------
+   * PUBLIC METHODS
+   * ------------------------------------------------------------ */
+  
+  /**
+   * Constructor.
+   *
+   * @access  public
+   * @return  void
+   */
+  public function __construct()
+  {
+    $this->EE =& get_instance();
+    $this->EE->load->add_package_path(PATH_THIRD .'supersticky/');
 
-        $this->_ee->load->model('supersticky_model');
-        $this->_model = $this->_ee->supersticky_model;
-        
-        $this->version = $this->_model->get_package_version();
-    }
+    $this->EE->load->model('supersticky_model');
+    $this->_model = $this->EE->supersticky_model;
     
-    
-    /**
-     * Installs the module.
-     *
-     * @access  public
-     * @return  bool
-     */
-    public function install()
-    {
-        return $this->_model->install_module();
-    }
-
-
-    /**
-     * Uninstalls the module.
-     *
-     * @access  public
-     * @return  bool
-     */
-    public function uninstall()
-    {
-        return $this->_model->uninstall_module();
-    }
+    $this->version = $this->_model->get_package_version();
+  }
+  
+  
+  /**
+   * Installs the module.
+   *
+   * @access  public
+   * @return  bool
+   */
+  public function install()
+  {
+    return $this->_model->install_module();
+  }
 
 
-    /**
-     * Updates the module.
-     *
-     * @access  public
-     * @param   string      $installed_version      The installed version.
-     * @return  bool
-     */
-    public function update($installed_version = '')
-    {
-        return $this->_model->update_module($installed_version);
-    }
-    
+  /**
+   * Uninstalls the module.
+   *
+   * @access  public
+   * @return  bool
+   */
+  public function uninstall()
+  {
+    return $this->_model->uninstall_module();
+  }
+
+
+  /**
+   * Updates the module.
+   *
+   * @access  public
+   * @param   string      $installed_version      The installed version.
+   * @return  bool
+   */
+  public function update($installed_version = '')
+  {
+    return $this->_model->update_module($installed_version);
+  }
+
+
 }
 
 
