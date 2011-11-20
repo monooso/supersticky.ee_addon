@@ -90,7 +90,7 @@ class Test_supersticky extends Testee_unit_test_case {
     );
 
     $this->_model->expectOnce('get_supersticky_entries_for_date',
-      array(new DateTime()));
+      array(new DateTime(), NULL));
 
     $this->_model->setReturnValue('get_supersticky_entries_for_date',
       $ss_entries);
@@ -158,7 +158,7 @@ class Test_supersticky extends Testee_unit_test_case {
     );
 
     $this->_model->expectOnce('get_supersticky_entries_for_date',
-      array(new DateTime()));
+      array(new DateTime(), NULL));
 
     $this->_model->setReturnValue('get_supersticky_entries_for_date',
       $ss_entries);
@@ -207,7 +207,7 @@ class Test_supersticky extends Testee_unit_test_case {
     $this->_ee->session->setReturnValue('userdata', $group_id);
 
     $this->_model->expectOnce('get_supersticky_entries_for_date',
-      array(new DateTime()));
+      array(new DateTime(), NULL));
 
     $this->_model->setReturnValue('get_supersticky_entries_for_date', array());
 
@@ -280,7 +280,7 @@ class Test_supersticky extends Testee_unit_test_case {
     );
 
     $this->_model->expectOnce('get_supersticky_entries_for_date',
-      array(new DateTime()));
+      array(new DateTime(), NULL));
 
     $this->_model->setReturnValue('get_supersticky_entries_for_date',
       $ss_entries);
@@ -305,6 +305,219 @@ class Test_supersticky extends Testee_unit_test_case {
 
     $expected_result  = str_replace('ORDER BY', $order_sql, $expected_result);
     $expected_result  = str_replace('WHERE', $where_sql, $expected_result);
+    
+    $this->_subject->sql = $initial_sql;
+    $this->_subject->build_sql_query($querystring);
+
+    $actual_result = $this->_subject->sql;
+
+    /**
+     * HACK ALERT:
+     * We need to ignore whitespace when checking that the actual result
+     * and the expected result are equal.
+     */
+
+    $pattern = '/[\t\n ]+/';
+
+    $this->assertIdentical(
+      preg_replace($pattern, '', $expected_result),
+      preg_replace($pattern, '', $actual_result)
+    );
+  }
+
+
+  public function test__build_sql_query__works_when_limit_parameter_is_set()
+  {
+    $limit = 3;
+    $this->_ee->TMPL->setReturnValue('fetch_param', $limit,
+      array('limit', '*'));
+
+    $this->_ee->TMPL->setReturnValue('fetch_param', $limit,
+      array('limit'));
+
+    $group_id     = 10;
+    $querystring  = '';
+
+    $this->_ee->session->expectOnce('userdata', array('group_id'));
+    $this->_ee->session->setReturnValue('userdata', $group_id);
+
+    $ss_entries = array(
+      new Supersticky_entry(array(
+        'entry_id' => '300',
+        'criteria' => array(
+          new Supersticky_criterion(array(
+            'date_from' => new DateTime('-1 day'),
+            'date_to'   => new DateTime('+ 1 day'),
+            'member_groups' => array(10, 20, 30)
+          ))
+        )
+      ))
+    );
+
+    $this->_model->expectOnce('get_supersticky_entries_for_date',
+      array(new DateTime(), NULL));
+
+    $this->_model->setReturnValue('get_supersticky_entries_for_date',
+      $ss_entries);
+
+    // Set the current SQL.
+    $initial_sql  = "SELECT a.b FROM c WHERE d = 'e' ORDER BY f ASC";
+    $order_sql    = 'ORDER BY ss_order_index ASC,';
+    $where_sql    = 'LEFT JOIN (SELECT 300 AS entry_id, 1 AS order_index)
+      AS ss ON ss.entry_id = t.entry_id WHERE';
+
+    $expected_result = str_replace(
+      array('SELECT', 'ORDER BY', 'WHERE'),
+      array(
+        'SELECT IFNULL(ss.order_index, 999999) AS ss_order_index,',
+        $order_sql,
+        $where_sql
+      ),
+      $initial_sql
+    );
+
+    $expected_result .= ' LIMIT ' .$limit;
+    
+    $this->_subject->sql = $initial_sql;
+    $this->_subject->build_sql_query($querystring);
+
+    $actual_result = $this->_subject->sql;
+
+    /**
+     * HACK ALERT:
+     * We need to ignore whitespace when checking that the actual result
+     * and the expected result are equal.
+     */
+
+    $pattern = '/[\t\n ]+/';
+
+    $this->assertIdentical(
+      preg_replace($pattern, '', $expected_result),
+      preg_replace($pattern, '', $actual_result)
+    );
+  }
+
+
+  public function test__build_sql_query__works_when_channel_parameter_is_set()
+  {
+    $channel = 'my_lovely_channel';
+
+    $this->_ee->TMPL->setReturnValue('fetch_param', $channel,
+      array('channel', '*'));
+
+    $group_id     = 10;
+    $querystring  = '';
+
+    $this->_ee->session->expectOnce('userdata', array('group_id'));
+    $this->_ee->session->setReturnValue('userdata', $group_id);
+
+    $ss_entries = array(
+      new Supersticky_entry(array(
+        'entry_id' => '300',
+        'criteria' => array(
+          new Supersticky_criterion(array(
+            'date_from' => new DateTime('-1 day'),
+            'date_to'   => new DateTime('+ 1 day'),
+            'member_groups' => array(10, 20, 30)
+          ))
+        )
+      ))
+    );
+
+    $this->_model->expectOnce('get_supersticky_entries_for_date',
+      array(new DateTime(), $channel));
+
+    $this->_model->setReturnValue('get_supersticky_entries_for_date',
+      $ss_entries);
+
+    // Set the current SQL.
+    $initial_sql  = "SELECT a.b FROM c WHERE d = 'e' ORDER BY f ASC";
+    $order_sql    = 'ORDER BY ss_order_index ASC,';
+    $where_sql    = 'LEFT JOIN (SELECT 300 AS entry_id, 1 AS order_index)
+      AS ss ON ss.entry_id = t.entry_id WHERE';
+
+    $expected_result = str_replace(
+      array('SELECT', 'ORDER BY', 'WHERE'),
+      array(
+        'SELECT IFNULL(ss.order_index, 999999) AS ss_order_index,',
+        $order_sql,
+        $where_sql
+      ),
+      $initial_sql
+    );
+
+    $this->_subject->sql = $initial_sql;
+    $this->_subject->build_sql_query($querystring);
+
+    $actual_result = $this->_subject->sql;
+
+    /**
+     * HACK ALERT:
+     * We need to ignore whitespace when checking that the actual result
+     * and the expected result are equal.
+     */
+
+    $pattern = '/[\t\n ]+/';
+
+    $this->assertIdentical(
+      preg_replace($pattern, '', $expected_result),
+      preg_replace($pattern, '', $actual_result)
+    );
+  }
+
+
+  public function test__build_sql_query__adds_supersticky_entry_id_to_in_clause_if_required()
+  {
+    $limit = 3;
+    $this->_ee->TMPL->setReturnValue('fetch_param', $limit,
+      array('limit', '*'));
+
+    $this->_ee->TMPL->setReturnValue('fetch_param', $limit,
+      array('limit'));
+
+    $group_id     = 10;
+    $querystring  = '';
+
+    $this->_ee->session->expectOnce('userdata', array('group_id'));
+    $this->_ee->session->setReturnValue('userdata', $group_id);
+
+    $ss_entries = array(
+      new Supersticky_entry(array(
+        'entry_id' => '300',
+        'criteria' => array(
+          new Supersticky_criterion(array(
+            'date_from' => new DateTime('-1 day'),
+            'date_to'   => new DateTime('+ 1 day'),
+            'member_groups' => array(10, 20, 30)
+          ))
+        )
+      ))
+    );
+
+    $this->_model->expectOnce('get_supersticky_entries_for_date',
+      array(new DateTime(), NULL));
+
+    $this->_model->setReturnValue('get_supersticky_entries_for_date',
+      $ss_entries);
+
+    // Set the current SQL.
+    $initial_sql  = "SELECT a FROM b WHERE entry_id IN(10, 20) ORDER BY f ASC";
+    $order_sql    = 'ORDER BY ss_order_index ASC,';
+    $where_sql    = 'LEFT JOIN (SELECT 300 AS entry_id, 1 AS order_index)
+      AS ss ON ss.entry_id = t.entry_id WHERE';
+
+    $expected_result = str_replace(
+      array('SELECT', 'ORDER BY', 'WHERE', 'IN(10, 20)'),
+      array(
+        'SELECT IFNULL(ss.order_index, 999999) AS ss_order_index,',
+        $order_sql,
+        $where_sql,
+        'IN(10,20,300)'
+      ),
+      $initial_sql
+    );
+
+    $expected_result .= ' LIMIT ' .$limit;
     
     $this->_subject->sql = $initial_sql;
     $this->_subject->build_sql_query($querystring);

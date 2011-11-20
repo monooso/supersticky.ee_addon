@@ -56,9 +56,16 @@ class Supersticky extends Channel {
     $group_id = $this->EE->session->userdata('group_id');
     $sql      = $this->sql;
 
-    // Retrieve all the SuperSticky criteria for the current date.
+    /**
+     * Retrieve all the SuperSticky criteria for the current date.
+     *
+     * NOTE:
+     * At present, SuperSticky does not support pipe-separated channel names.
+     * One for the future.
+     */
+
     $ss_entries = $this->_model->get_supersticky_entries_for_date(
-      new DateTime());
+      new DateTime(), $this->EE->TMPL->fetch_param('channel', NULL));
 
     // If there are no SuperSticky entries for the current date, we're done.
     if ( ! $ss_entries)
@@ -66,9 +73,10 @@ class Supersticky extends Channel {
       return;
     }
 
-    $ss_length  = count($ss_entries);
-    $ss_items   = array();
-    $where_sql  = '';
+    $ss_length    = count($ss_entries);
+    $ss_items     = array();
+    $ss_entry_ids = array();
+    $where_sql    = '';
 
     for ($count = 1; $count <= $ss_length; $count++)
     {
@@ -85,6 +93,7 @@ class Supersticky extends Channel {
               {$count} AS order_index"
             : "SELECT {$ss_entry->get_entry_id()}, {$count}";
 
+          $ss_entry_ids[] = $ss_entry->get_entry_id();
           break;
         }
       }
@@ -110,6 +119,51 @@ class Supersticky extends Channel {
     $sql = str_replace('SELECT', $select_sql, $sql);
     $sql = str_replace('ORDER BY', $order_sql, $sql);
     $sql = str_replace('WHERE', $where_sql, $sql);
+
+    /**
+     * TRICKY:
+     * The standard EE SQL query lists all the possible entry IDs matching the
+     * given criteria in an `IN(...)` clause.
+     *
+     * [explitives redacted].
+     *
+     * This has an unfortunate side effect when the `limit` parameter is used.
+     * Namely, the `IN` SQL clause may not include the required SuperSticky
+     * entry IDs.
+     *
+     * As such we need to:
+     * 1. Add the SuperSticky entry IDs to the `IN` clause, as requred.
+     * 2. Add a `LIMIT` clause to the SQL statement, if required.
+     */
+
+    if (preg_match('/IN ?\(([0-9, ]+)\)/', $sql, $in_matches))
+    {
+      $in_entry_ids     = explode(',', $in_matches[1]);
+      $clean_entry_ids  = array();
+
+      foreach ($in_entry_ids AS $in_entry_id)
+      {
+        $clean_entry_ids[] = (int) trim($in_entry_id);
+      }
+
+      $clean_entry_ids = array_merge($clean_entry_ids, $ss_entry_ids);
+      sort($clean_entry_ids);
+
+      $sql = str_replace($in_matches[0],
+        'IN(' .implode(',', $clean_entry_ids) .')', $sql);
+    }
+
+    /**
+     * Because we're overridding the 'IN' clause, we also need to ensure the
+     * `limit` parameter is honoured.
+     */
+
+    if (valid_int($this->EE->TMPL->fetch_param('limit', 0), 1))
+    {
+      $sql .= ' LIMIT ' .$this->EE->TMPL->fetch_param('limit');
+    }
+
+    error_log($sql);
 
     $this->sql = $sql;
   }
