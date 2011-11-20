@@ -260,10 +260,14 @@ class Supersticky_model extends CI_Model {
    * Retrieves the SuperSticky Entries that are active on the given date.
    *
    * @access  public
-   * @param   DateTime    $date     The date we're looking for.
+   * @param   DateTime  $date       The date we're looking for.
+   * @param   string    $channel    The channel short name.
    * @return  Array
    */
-  public function get_supersticky_entries_for_date(DateTime $date)
+  public function get_supersticky_entries_for_date(
+    DateTime $date,
+    $channel = NULL
+  )
   {
     /**
      * Given that SuperSticky entries don't have any inherent ordering,
@@ -275,15 +279,25 @@ class Supersticky_model extends CI_Model {
 
     $db = $this->EE->db;
 
-    $db_result = $db->select('supersticky_entries.*')
-      ->join('channel_titles',
-        'channel_titles.entry_id = supersticky_entries.entry_id', 'inner') 
-      ->where(array(
-          'supersticky_entries.date_from <=' => $date->format(DATE_W3C),
-          'supersticky_entries.date_to >=' => $date->format(DATE_W3C)
-        ))
-      ->order_by('channel_titles.sticky DESC, channel_titles.entry_date ASC')
-      ->get('supersticky_entries');
+    $db->select('supersticky_entries.*');
+    $db->join('channel_titles',
+      'channel_titles.entry_id = supersticky_entries.entry_id', 'inner');
+
+    if (is_string($channel))
+    {
+      $db->join('channels',
+        'channels.channel_id = channel_titles.channel_id', 'inner');
+
+      $db->where(array('channels.channel_name' => $channel));
+    }
+
+    $db->where(array(
+      'supersticky_entries.date_from <=' => $date->format(DATE_W3C),
+      'supersticky_entries.date_to >=' => $date->format(DATE_W3C)
+    ));
+
+    $db->order_by('channel_titles.sticky DESC, channel_titles.entry_date ASC');
+    $db_result = $db->get('supersticky_entries');
 
     $return = $entries = array();
 

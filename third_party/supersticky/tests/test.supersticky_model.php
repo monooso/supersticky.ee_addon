@@ -324,6 +324,50 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
+  public function test__get_supersticky_entries_for_date__honours_channel()
+  {
+    $db       = $this->_ee->db;
+    $date     = new DateTime('20110615T12:00:00+00:00');
+    $channel  = 'my_lovely_channel';
+
+    $db->expectOnce('select', array('supersticky_entries.*'));
+
+    $db->expectCallCount('join', 2);
+
+    $db->expectAt(0, 'join', array('channel_titles',
+        'channel_titles.entry_id = supersticky_entries.entry_id', 'inner'));
+
+    $db->expectAt(1, 'join', array('channels',
+        'channels.channel_id = channel_titles.channel_id', 'inner'));
+
+    $db->expectCallCount('where', 2);
+
+    $db->expectAt(0, 'where', array(array(
+      'channels.channel_name' => $channel)));
+
+    $db->expectAt(1, 'where', array(array(
+      'supersticky_entries.date_from <=' => $date->format(DATE_W3C),
+      'supersticky_entries.date_to >=' => $date->format(DATE_W3C))));
+
+    $db->expectOnce('order_by',
+      array('channel_titles.sticky DESC, channel_titles.entry_date ASC'));
+
+    $db->expectOnce('get', array('supersticky_entries'));
+  
+    $db_result = $this->_get_mock('db_query');
+    $db_rows = array();
+
+    $db->setReturnReference('get', $db_result);
+    $db_result->setReturnValue('num_rows', count($db_rows));
+    $db_result->setReturnValue('result', $db_rows);
+
+    $this->assertIdentical(
+      array(),
+      $this->_subject->get_supersticky_entries_for_date($date, $channel)
+    );
+  }
+
+
   public function test__get_supersticky_entry_by_id__entry_found()
   {
     // Build our dummy data.
@@ -522,29 +566,10 @@ class Test_supersticky_model extends Testee_unit_test_case {
   }
 
 
-  public function test__install_module_actions__success()
-  {
-    $query_data = array(
-      array('class' => ucfirst($this->_package_name), 'method' => '')
-    );
-
-    $query_count = count($query_data);
-    $this->_ee->db->expectCallCount('insert', $query_count);
-
-    for ($count = 0; $count < $query_count; $count++)
-    {
-      $this->_ee->db->expectAt($count, 'insert',
-        array('actions', $query_data[$count]));
-    }
-
-    $this->_subject->install_module_actions();
-  }
-
-
   public function test__install_module_register__success()
   {
     $query_data = array(
-      'has_cp_backend'        => 'y',
+      'has_cp_backend'        => 'n',
       'has_publish_fields'    => 'y',
       'module_name'           => ucfirst($this->_package_name),
       'module_version'        => $this->_package_version
@@ -734,18 +759,14 @@ class Test_supersticky_model extends Testee_unit_test_case {
     $db_module_result->setReturnValue('row', $db_module_row);
 
     // Delete all traces of the module...
-    $this->_ee->db->expectCallCount('delete', 3);
+    $this->_ee->db->expectCallCount('delete', 2);
 
     // Delete the module member groups.
     $this->_ee->db->expectAt(0, 'delete', array('module_member_groups',
       array('module_id' => $db_module_row->module_id)));
 
-    // Delete the module actions.
-    $this->_ee->db->expectAt(1, 'delete', array('actions',
-      array('class' => $module_name)));
-
     // Delete the module.
-    $this->_ee->db->expectAt(2, 'delete', array('modules',
+    $this->_ee->db->expectAt(1, 'delete', array('modules',
       array('module_name' => $module_name)));
 
     // Drop the module tables.

@@ -17,7 +17,10 @@ class Mock_supersticky_model {
   public function get_package_theme_url() {}
   public function get_package_version() {}
   public function get_site_id() {}
-  public function get_supersticky_entries_for_date(DateTime $date) {}
+
+  public function get_supersticky_entries_for_date(DateTime $date,
+    $channel = NULL) {}
+
   public function get_supersticky_entry_by_id($entry_id) {}
   public function install_module() {}
   public function install_module_actions() {}
