@@ -1,4 +1,4 @@
-<?php if ( ! defined('EXT')) exit('Invalid file request.');
+<?php if ( ! defined('BASEPATH')) exit('Invalid file request.');
 
 /**
  * SuperSticky tab tests.
@@ -9,7 +9,6 @@
  */
 
 require_once PATH_THIRD .'supersticky/tab.supersticky.php';
-require_once PATH_THIRD .'supersticky/tests/mocks/mock.supersticky_model.php';
 
 class Test_supersticky_tab extends Testee_unit_test_case {
 
@@ -31,9 +30,7 @@ class Test_supersticky_tab extends Testee_unit_test_case {
     {
         parent::setUp();
 
-        Mock::generate('Mock_supersticky_model',
-          get_class($this) .'_mock_model');
-
+        Mock::generate('Supersticky_model', get_class($this) .'_mock_model');
         $this->EE->supersticky_model = $this->_get_mock('model');
 
         $this->_model   = $this->EE->supersticky_model;

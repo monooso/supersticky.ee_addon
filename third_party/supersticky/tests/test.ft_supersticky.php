@@ -11,7 +11,7 @@
 // TRICKY: Need to manually require the EE_Fieldtype class.
 require_once PATH_FT .'EE_Fieldtype.php';
 require_once PATH_THIRD .'supersticky/ft.supersticky.php';
-require_once PATH_THIRD .'supersticky/tests/mocks/mock.supersticky_model.php';
+require_once PATH_THIRD .'supersticky/models/supersticky_model.php';
 
 class Test_supersticky_ft extends Testee_unit_test_case {
 
@@ -33,8 +33,7 @@ class Test_supersticky_ft extends Testee_unit_test_case {
   {
     parent::setUp();
 
-    Mock::generate('Mock_supersticky_model',
-      get_class($this) .'_mock_model');
+    Mock::generate('Supersticky_model', get_class($this) .'_mock_model');
 
     $this->EE->supersticky_model = $this->_get_mock('model');
     $this->_model   = $this->EE->supersticky_model;

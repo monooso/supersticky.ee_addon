@@ -1,4 +1,4 @@
-<?php if ( ! defined('EXT')) exit('Invalid file request.');
+<?php if ( ! defined('BASEPATH')) exit('Invalid file request.');
 
 /**
  * SuperSticky module update tests.
@@ -8,8 +8,7 @@
  * @package         Supersticky
  */
 
-require_once PATH_THIRD .'supersticky/upd.supersticky' .EXT;
-require_once PATH_THIRD .'supersticky/tests/mocks/mock.supersticky_model' .EXT;
+require_once PATH_THIRD .'supersticky/upd.supersticky.php';
 
 class Test_supersticky_upd extends Testee_unit_test_case {
 
@@ -31,8 +30,9 @@ class Test_supersticky_upd extends Testee_unit_test_case {
     {
         parent::setUp();
 
-        Mock::generate('Mock_supersticky_model', get_class($this) .'_mock_model');
+        Mock::generate('Supersticky_model', get_class($this) .'_mock_model');
         $this->EE->supersticky_model = $this->_get_mock('model');
+
         $this->_model   = $this->EE->supersticky_model;
         $this->_subject = new Supersticky_upd();
     }
