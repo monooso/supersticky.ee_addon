@@ -52,8 +52,8 @@ class Test_supersticky extends Testee_unit_test_case {
     parent::setUp();
 
     Mock::generate('Mock_supersticky_model', get_class($this) .'_mock_model');
-    $this->_ee->supersticky_model = $this->_get_mock('model');
-    $this->_model   = $this->_ee->supersticky_model;
+    $this->EE->supersticky_model = $this->_get_mock('model');
+    $this->_model   = $this->EE->supersticky_model;
     $this->_subject = new Supersticky();
   }
 
@@ -63,8 +63,8 @@ class Test_supersticky extends Testee_unit_test_case {
     $group_id     = 10;
     $querystring  = '';
 
-    $this->_ee->session->expectOnce('userdata', array('group_id'));
-    $this->_ee->session->setReturnValue('userdata', $group_id);
+    $this->EE->session->expectOnce('userdata', array('group_id'));
+    $this->EE->session->setReturnValue('userdata', $group_id);
 
     $ss_entries = array(
       new Supersticky_entry(array(
@@ -141,8 +141,8 @@ class Test_supersticky extends Testee_unit_test_case {
     $group_id     = 10;
     $querystring  = '';
 
-    $this->_ee->session->expectOnce('userdata', array('group_id'));
-    $this->_ee->session->setReturnValue('userdata', $group_id);
+    $this->EE->session->expectOnce('userdata', array('group_id'));
+    $this->EE->session->setReturnValue('userdata', $group_id);
 
     $ss_entries = array(
       new Supersticky_entry(array(
@@ -203,8 +203,8 @@ class Test_supersticky extends Testee_unit_test_case {
     $group_id     = 10;
     $querystring  = '';
 
-    $this->_ee->session->expectOnce('userdata', array('group_id'));
-    $this->_ee->session->setReturnValue('userdata', $group_id);
+    $this->EE->session->expectOnce('userdata', array('group_id'));
+    $this->EE->session->setReturnValue('userdata', $group_id);
 
     $this->_model->expectOnce('get_supersticky_entries_for_date',
       array(new DateTime(), NULL));
@@ -240,8 +240,8 @@ class Test_supersticky extends Testee_unit_test_case {
     $group_id     = 10;
     $querystring  = '';
 
-    $this->_ee->session->expectOnce('userdata', array('group_id'));
-    $this->_ee->session->setReturnValue('userdata', $group_id);
+    $this->EE->session->expectOnce('userdata', array('group_id'));
+    $this->EE->session->setReturnValue('userdata', $group_id);
 
     $ss_entries = array(
       new Supersticky_entry(array(
@@ -329,17 +329,17 @@ class Test_supersticky extends Testee_unit_test_case {
   public function test__build_sql_query__works_when_limit_parameter_is_set()
   {
     $limit = 3;
-    $this->_ee->TMPL->setReturnValue('fetch_param', $limit,
+    $this->EE->TMPL->setReturnValue('fetch_param', $limit,
       array('limit', '*'));
 
-    $this->_ee->TMPL->setReturnValue('fetch_param', $limit,
+    $this->EE->TMPL->setReturnValue('fetch_param', $limit,
       array('limit'));
 
     $group_id     = 10;
     $querystring  = '';
 
-    $this->_ee->session->expectOnce('userdata', array('group_id'));
-    $this->_ee->session->setReturnValue('userdata', $group_id);
+    $this->EE->session->expectOnce('userdata', array('group_id'));
+    $this->EE->session->setReturnValue('userdata', $group_id);
 
     $ss_entries = array(
       new Supersticky_entry(array(
@@ -402,14 +402,14 @@ class Test_supersticky extends Testee_unit_test_case {
   {
     $channel = 'my_lovely_channel';
 
-    $this->_ee->TMPL->setReturnValue('fetch_param', $channel,
+    $this->EE->TMPL->setReturnValue('fetch_param', $channel,
       array('channel', '*'));
 
     $group_id     = 10;
     $querystring  = '';
 
-    $this->_ee->session->expectOnce('userdata', array('group_id'));
-    $this->_ee->session->setReturnValue('userdata', $group_id);
+    $this->EE->session->expectOnce('userdata', array('group_id'));
+    $this->EE->session->setReturnValue('userdata', $group_id);
 
     $ss_entries = array(
       new Supersticky_entry(array(
@@ -469,17 +469,17 @@ class Test_supersticky extends Testee_unit_test_case {
   public function test__build_sql_query__adds_supersticky_entry_id_to_in_clause_if_required()
   {
     $limit = 3;
-    $this->_ee->TMPL->setReturnValue('fetch_param', $limit,
+    $this->EE->TMPL->setReturnValue('fetch_param', $limit,
       array('limit', '*'));
 
-    $this->_ee->TMPL->setReturnValue('fetch_param', $limit,
+    $this->EE->TMPL->setReturnValue('fetch_param', $limit,
       array('limit'));
 
     $group_id     = 10;
     $querystring  = '';
 
-    $this->_ee->session->expectOnce('userdata', array('group_id'));
-    $this->_ee->session->setReturnValue('userdata', $group_id);
+    $this->EE->session->expectOnce('userdata', array('group_id'));
+    $this->EE->session->setReturnValue('userdata', $group_id);
 
     $ss_entries = array(
       new Supersticky_entry(array(

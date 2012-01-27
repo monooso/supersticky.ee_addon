@@ -34,9 +34,9 @@ class Test_supersticky_tab extends Testee_unit_test_case {
         Mock::generate('Mock_supersticky_model',
           get_class($this) .'_mock_model');
 
-        $this->_ee->supersticky_model = $this->_get_mock('model');
+        $this->EE->supersticky_model = $this->_get_mock('model');
 
-        $this->_model   = $this->_ee->supersticky_model;
+        $this->_model   = $this->EE->supersticky_model;
         $this->_subject = new Supersticky_tab();
     }
 
@@ -88,10 +88,10 @@ class Test_supersticky_tab extends Testee_unit_test_case {
       $error_message = 'Epic fail!';
       $error_data = print_r($params, TRUE);
 
-      $this->_ee->lang->expectOnce('line',
+      $this->EE->lang->expectOnce('line',
         array('error__publish_data_db_missing_entry_id'));
 
-      $this->_ee->lang->setReturnValue('line', $error_message,
+      $this->EE->lang->setReturnValue('line', $error_message,
         array('error__publish_data_db_missing_entry_id'));
 
       $this->_model->expectOnce('log_message',
@@ -117,10 +117,10 @@ class Test_supersticky_tab extends Testee_unit_test_case {
       $error_message = 'Oh noes!';
       $error_data = print_r($params, TRUE);
 
-      $this->_ee->lang->expectOnce('line',
+      $this->EE->lang->expectOnce('line',
         array('error__publish_data_db_missing_entry_id'));
 
-      $this->_ee->lang->setReturnValue('line', $error_message,
+      $this->EE->lang->setReturnValue('line', $error_message,
         array('error__publish_data_db_missing_entry_id'));
 
       $this->_model->expectOnce('log_message',
@@ -132,7 +132,7 @@ class Test_supersticky_tab extends Testee_unit_test_case {
 
     public function test__publish_tabs__works_without_saved_data()
     {
-      $lang = $this->_ee->lang;
+      $lang = $this->EE->lang;
 
       $channel_id         = 10;
       $field_instructions = 'Field instructions.';
@@ -171,7 +171,7 @@ class Test_supersticky_tab extends Testee_unit_test_case {
 
     public function test__publish_tabs__works_with_saved_data()
     {
-      $lang = $this->_ee->lang;
+      $lang = $this->EE->lang;
 
       $channel_id         = 10;
       $entry_id           = 99;
