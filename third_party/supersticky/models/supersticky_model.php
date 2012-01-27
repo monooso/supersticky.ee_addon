@@ -6,7 +6,7 @@
  * @author          Stephen Lewis (http://github.com/experience/)
  * @copyright       Experience Internet
  * @package         Supersticky
- * @version         0.9.0
+ * @version         0.9.1
  */
 
 require_once PATH_THIRD .'supersticky/classes/supersticky_entry.php';
@@ -18,104 +18,6 @@ class Supersticky_model extends CI_Model {
   private $_package_name;
   private $_package_version;
   private $_site_id;
-
-
-  /* --------------------------------------------------------------
-   * PRIVATE METHODS
-   * ------------------------------------------------------------ */
-  
-  /**
-   * Returns an associative array containing layout tab information.
-   *
-   * @access  private
-   * @return  Array
-   */
-  private function _get_layout_tabs()
-  {
-    return array(
-      'supersticky' => array(
-        'supersticky_criteria' => array(
-          'collapse'      => 'false',
-          'htmlbuttons'   => 'false',
-          'visible'       => 'true',
-          'width'         => '100%'
-        )
-      )
-    );
-  }
-
-
-  /**
-   * Returns a references to the package cache. Should be called
-   * as follows: $cache =& $this->_get_package_cache();
-   *
-   * @access  private
-   * @return  array
-   */
-  private function &_get_package_cache()
-  {
-    return $this->EE->session->cache[$this->_namespace][$this->_package_name];
-  }
-
-
-  /**
-   * Parses an exp_supersticky_entries row into a Supersticky_criterion object.
-   *
-   * @access  private
-   * @param   StdClass    $row    The database row.
-   * @return  Supersticky_criterion|FALSE
-   */
-  private function _parse_supersticky_entries_db_row(StdClass $row)
-  {
-    /**
-     * TRICKY:
-     * An empty date string will be converted to the current date, so we
-     * need to perform a separate check here.
-     */
-
-    if ( ! $row->date_from OR ! $row->date_to)
-    {
-      return FALSE;
-    }
-
-    /**
-     * Attempt to wrest the dates in valid DateTime objects.
-     *
-     * TRICKY:
-     * PHP < 5.3.x does not throw an Exception when you attempt to create
-     * a DateTime object with an invalid constructor argument, despite
-     * what the documentation might suggest.
-     *
-     * If this needs to work with PHP < 5.2.x, it will need to be rewritten.
-     */
-
-    try
-    {
-      $date_from  = new DateTime($row->date_from);
-      $date_to    = new DateTime($row->date_to);
-    }
-    catch (Exception $e)
-    {
-      return FALSE;
-    }
-
-    foreach (($member_groups = explode('|', $row->member_groups))
-      AS $member_group
-    )
-    {
-      if ( ! valid_int($member_group, 1))
-      {
-        return FALSE;
-      }
-    }
-
-    return new Supersticky_criterion(array(
-      'date_from'     => $date_from,
-      'date_to'       => $date_to,
-      'member_groups' => $member_groups
-    ));
-  }
-
 
 
   /* --------------------------------------------------------------
@@ -131,9 +33,7 @@ class Supersticky_model extends CI_Model {
    * @param   string    $namespace        Session namespace. Used for testing.
    * @return  void
    */
-  public function __construct(
-    $package_name = '',
-    $package_version = '',
+  public function __construct($package_name = '', $package_version = '',
     $namespace = ''
   )
   {
@@ -148,7 +48,7 @@ class Supersticky_model extends CI_Model {
       ? strtolower($package_name) : 'supersticky';
 
     $this->_package_version = $package_version
-      ? $package_version : '0.9.0';
+      ? $package_version : '0.9.1';
 
     // Initialise the add-on cache.
     if ( ! array_key_exists($this->_namespace, $this->EE->session->cache))
@@ -652,6 +552,104 @@ class Supersticky_model extends CI_Model {
     }
 
     return $new_entry;
+  }
+
+
+
+  /* --------------------------------------------------------------
+   * PRIVATE METHODS
+   * ------------------------------------------------------------ */
+  
+  /**
+   * Returns an associative array containing layout tab information.
+   *
+   * @access  private
+   * @return  Array
+   */
+  private function _get_layout_tabs()
+  {
+    return array(
+      'supersticky' => array(
+        'supersticky_criteria' => array(
+          'collapse'      => 'false',
+          'htmlbuttons'   => 'false',
+          'visible'       => 'true',
+          'width'         => '100%'
+        )
+      )
+    );
+  }
+
+
+  /**
+   * Returns a references to the package cache. Should be called
+   * as follows: $cache =& $this->_get_package_cache();
+   *
+   * @access  private
+   * @return  array
+   */
+  private function &_get_package_cache()
+  {
+    return $this->EE->session->cache[$this->_namespace][$this->_package_name];
+  }
+
+
+  /**
+   * Parses an exp_supersticky_entries row into a Supersticky_criterion object.
+   *
+   * @access  private
+   * @param   StdClass    $row    The database row.
+   * @return  Supersticky_criterion|FALSE
+   */
+  private function _parse_supersticky_entries_db_row(StdClass $row)
+  {
+    /**
+     * TRICKY:
+     * An empty date string will be converted to the current date, so we
+     * need to perform a separate check here.
+     */
+
+    if ( ! $row->date_from OR ! $row->date_to)
+    {
+      return FALSE;
+    }
+
+    /**
+     * Attempt to wrest the dates in valid DateTime objects.
+     *
+     * TRICKY:
+     * PHP < 5.3.x does not throw an Exception when you attempt to create
+     * a DateTime object with an invalid constructor argument, despite
+     * what the documentation might suggest.
+     *
+     * If this needs to work with PHP < 5.2.x, it will need to be rewritten.
+     */
+
+    try
+    {
+      $date_from  = new DateTime($row->date_from);
+      $date_to    = new DateTime($row->date_to);
+    }
+    catch (Exception $e)
+    {
+      return FALSE;
+    }
+
+    foreach (($member_groups = explode('|', $row->member_groups))
+      AS $member_group
+    )
+    {
+      if ( ! valid_int($member_group, 1))
+      {
+        return FALSE;
+      }
+    }
+
+    return new Supersticky_criterion(array(
+      'date_from'     => $date_from,
+      'date_to'       => $date_to,
+      'member_groups' => $member_groups
+    ));
   }
 
 
