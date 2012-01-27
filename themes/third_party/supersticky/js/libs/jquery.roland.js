@@ -14,8 +14,13 @@
     return this.each(function() {
       var $container = $(this);
 
-      $.fn.roland.updateIndexes($container, opts);
-      $.fn.roland.updateNav($container, opts);
+      if (opts.autoUpdateIndexes === true) {
+        $.fn.roland.updateIndexes($container, opts);
+      }
+
+      if (opts.autoUpdateNav === true) {
+        $.fn.roland.updateNav($container, opts);
+      }
 
       // Adds a row.
       $container.find('.' + opts.addRowClass).bind('click', function(e) {
@@ -49,9 +54,11 @@
         $cloneRow.find('select').val('');
 
         // Pre-add event. Only checks return value from last listener.
-        if ($link.data('events').preAddRow !== undefined) {
+        if ($container.data('events') !== undefined
+          && $container.data('events').preAddRow !== undefined) {
+
           eventData = {container : $container, options : opts, newRow : $cloneRow};
-          $cloneRow = $link.triggerHandler('preAddRow', [eventData]);
+          $cloneRow = $container.triggerHandler('preAddRow', [eventData]);
 
           // Returning FALSE prevents the row being added.
           if ($cloneRow === false) {
@@ -65,13 +72,20 @@
           ? $parentRow.after($cloneRow) : $lastRow.append($cloneRow);
 
         // Update everything.
-        $.fn.roland.updateIndexes($container, opts);
-        $.fn.roland.updateNav($container, opts);
+        if (opts.autoUpdateIndexes === true) {
+          $.fn.roland.updateIndexes($container, opts);
+        }
+
+        if (opts.autoUpdateNav === true) {
+          $.fn.roland.updateNav($container, opts);
+        }
 
         // Post-add event.
-        if ($link.data('events').postAddRow !== undefined) {
+        if ($container.data('events') !== undefined
+          && $container.data('events').postAddRow !== undefined) {
+          
           eventData = {container : $container, options : opts, newRow : $cloneRow};
-          $link.triggerHandler('postAddRow', [eventData]);
+          $container.triggerHandler('postAddRow', [eventData]);
         }
       });
 
@@ -101,7 +115,9 @@
   $.fn.roland.defaults = {
     rowClass        : 'row',
     addRowClass     : 'add_row',
-    removeRowClass  : 'remove_row'
+    removeRowClass  : 'remove_row',
+    autoUpdateIndexes : true,
+    autoUpdateNav   : true
   };
 
 

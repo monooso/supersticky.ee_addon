@@ -163,8 +163,6 @@ class Supersticky extends Channel {
       $sql .= ' LIMIT ' .$this->EE->TMPL->fetch_param('limit');
     }
 
-    error_log($sql);
-
     $this->sql = $sql;
   }
 

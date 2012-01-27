@@ -1,4 +1,4 @@
-<?php if ( ! defined('EXT')) exit('Invalid file request.');
+<?php if ( ! defined('BASEPATH')) exit('Invalid file request.');
 
 /**
  * SuperSticky model tests.
@@ -36,7 +36,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
     $this->_package_version = '1.0.0';
     $this->_site_id         = 10;
 
-    $this->_ee->config->setReturnValue('item', $this->_site_id,
+    $this->EE->config->setReturnValue('item', $this->_site_id,
       array('site_id'));
 
     $this->_subject = new Supersticky_model($this->_package_name,
@@ -60,8 +60,8 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__get_member_group_options__returns_member_groups()
   {
-    $lang       = $this->_ee->lang;
-    $db         = $this->_ee->db;
+    $lang       = $this->EE->lang;
+    $db         = $this->EE->db;
     $db_result  = $this->_get_mock('db_query');
 
     $db_rows = array(
@@ -106,8 +106,8 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__get_member_group_options__handles_no_member_groups()
   {
-    $lang       = $this->_ee->lang;
-    $db         = $this->_ee->db;
+    $lang       = $this->EE->lang;
+    $db         = $this->EE->db;
     $db_result  = $this->_get_mock('db_query');
 
     // Query the database.
@@ -138,14 +138,14 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__get_site_id__success()
   {
-    $this->_ee->config->expectOnce('item', array('site_id'));
+    $this->EE->config->expectOnce('item', array('site_id'));
     $this->assertIdentical(intval($this->_site_id), $this->_subject->get_site_id());
   }
 
 
   public function test__get_supersticky_entries_for_date__works()
   {
-    $db         = $this->_ee->db;
+    $db         = $this->EE->db;
     $date       = new DateTime('20110615T12:00:00+00:00');
     $date_from  = new DateTime('20110101T00:00:01+00:00');
     $date_to    = new DateTime('20111231T23:59:00+00:00');
@@ -239,7 +239,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__get_supersticky_entries_for_date__groups_items_with_same_entry_id()
   {
-    $db         = $this->_ee->db;
+    $db         = $this->EE->db;
     $date       = new DateTime('20110615T12:00:00+00:00');
     $date_from  = new DateTime('20110101T00:00:01+00:00');
     $date_to    = new DateTime('20111231T23:59:00+00:00');
@@ -307,7 +307,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__get_supersticky_entries_for_date__works_with_no_results()
   {
-    $db   = $this->_ee->db;
+    $db   = $this->EE->db;
     $date = new DateTime('20110615T12:00:00+00:00');
 
     $db_result = $this->_get_mock('db_query');
@@ -326,7 +326,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__get_supersticky_entries_for_date__honours_channel()
   {
-    $db       = $this->_ee->db;
+    $db       = $this->EE->db;
     $date     = new DateTime('20110615T12:00:00+00:00');
     $channel  = 'my_lovely_channel';
 
@@ -405,13 +405,13 @@ class Test_supersticky_model extends Testee_unit_test_case {
     $db_result = $this->_get_mock('db_query');
   
     // What we expect to happen.
-    $this->_ee->db->expectOnce('select',
+    $this->EE->db->expectOnce('select',
       array('entry_id, date_from, date_to, member_groups'));
 
-    $this->_ee->db->expectOnce('get_where',
+    $this->EE->db->expectOnce('get_where',
       array('supersticky_entries', array('entry_id' => $entry_id)));
 
-    $this->_ee->db->setReturnReference('get_where', $db_result);
+    $this->EE->db->setReturnReference('get_where', $db_result);
     $db_result->setReturnValue('num_rows', count($db_rows));
     $db_result->setReturnValue('result', $db_rows);
 
@@ -436,10 +436,10 @@ class Test_supersticky_model extends Testee_unit_test_case {
     $entry_id   = 10;
     $db_result  = $this->_get_mock('db_query');
 
-    $this->_ee->db->expectOnce('select');
-    $this->_ee->db->expectOnce('get_where');
+    $this->EE->db->expectOnce('select');
+    $this->EE->db->expectOnce('get_where');
 
-    $this->_ee->db->setReturnReference('get_where', $db_result);
+    $this->EE->db->setReturnReference('get_where', $db_result);
     $db_result->setReturnValue('num_rows', 0);
   
     $this->assertIdentical(
@@ -451,8 +451,8 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__get_supersticky_entry_by_id__invalid_entry_id()
   {
-    $this->_ee->db->expectNever('select');
-    $this->_ee->db->expectNever('get_where');
+    $this->EE->db->expectNever('select');
+    $this->EE->db->expectNever('get_where');
 
     $this->assertIdentical(FALSE,
       $this->_subject->get_supersticky_entry_by_id(0));
@@ -490,7 +490,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
       )
     );
 
-    $this->_ee->db->setReturnReference('get_where', $db_result);
+    $this->EE->db->setReturnReference('get_where', $db_result);
     $db_result->setReturnValue('num_rows', count($db_rows));
     $db_result->setReturnValue('result', $db_rows);
   
@@ -520,7 +520,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
       )
     );
 
-    $this->_ee->db->setReturnReference('get_where', $db_result);
+    $this->EE->db->setReturnReference('get_where', $db_result);
     $db_result->setReturnValue('num_rows', count($db_rows));
     $db_result->setReturnValue('result', $db_rows);
   
@@ -550,7 +550,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
       )
     );
 
-    $this->_ee->db->setReturnReference('get_where', $db_result);
+    $this->EE->db->setReturnReference('get_where', $db_result);
     $db_result->setReturnValue('num_rows', count($db_rows));
     $db_result->setReturnValue('result', $db_rows);
   
@@ -575,14 +575,14 @@ class Test_supersticky_model extends Testee_unit_test_case {
       'module_version'        => $this->_package_version
     );
 
-    $this->_ee->db->expectOnce('insert', array('modules', $query_data));
+    $this->EE->db->expectOnce('insert', array('modules', $query_data));
     $this->_subject->install_module_register();
   }
 
 
   public function test__install_module_tables__success()
   {
-    $this->_ee->load->expectOnce('dbforge');
+    $this->EE->load->expectOnce('dbforge');
 
     $fields = array(
       'entry_id' => array(
@@ -604,14 +604,14 @@ class Test_supersticky_model extends Testee_unit_test_case {
       )
     );
 
-    $this->_ee->dbforge->expectOnce('add_field', array($fields));
+    $this->EE->dbforge->expectOnce('add_field', array($fields));
 
-    $this->_ee->dbforge->expectCallCount('add_key', 3);
-    $this->_ee->dbforge->expectAt(0, 'add_key', array('entry_id'));
-    $this->_ee->dbforge->expectAt(1, 'add_key', array('date_from'));
-    $this->_ee->dbforge->expectAt(2, 'add_key', array('date_to'));
+    $this->EE->dbforge->expectCallCount('add_key', 3);
+    $this->EE->dbforge->expectAt(0, 'add_key', array('entry_id'));
+    $this->EE->dbforge->expectAt(1, 'add_key', array('date_from'));
+    $this->EE->dbforge->expectAt(2, 'add_key', array('date_to'));
 
-    $this->_ee->dbforge->expectOnce('create_table',
+    $this->EE->dbforge->expectOnce('create_table',
       array('supersticky_entries', TRUE));
   
     $this->_subject->install_module_tables();
@@ -620,7 +620,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__save_supersticky_entry__entry_saved()
   {
-    $db = $this->_ee->db;
+    $db = $this->EE->db;
 
     // Create the dummy entry.
     $criteria = array(
@@ -722,8 +722,8 @@ class Test_supersticky_model extends Testee_unit_test_case {
     ));
 
     // What we expect to happen.
-    $this->_ee->db->expectNever('delete');
-    $this->_ee->db->expectNever('insert');
+    $this->EE->db->expectNever('delete');
+    $this->EE->db->expectNever('insert');
   
     $this->assertIdentical(FALSE,
       $this->_subject->save_supersticky_entry($entry_a));
@@ -750,32 +750,32 @@ class Test_supersticky_model extends Testee_unit_test_case {
     $module_name                = ucfirst($this->_package_name);
 
     // Retrieve the module information.
-    $this->_ee->db->expectOnce('select', array('module_id'));
-    $this->_ee->db->expectOnce('get_where', array('modules',
+    $this->EE->db->expectOnce('select', array('module_id'));
+    $this->EE->db->expectOnce('get_where', array('modules',
       array('module_name' => $module_name), 1));
 
-    $this->_ee->db->setReturnReference('get_where', $db_module_result);
+    $this->EE->db->setReturnReference('get_where', $db_module_result);
     $db_module_result->setReturnValue('num_rows', 1);
     $db_module_result->setReturnValue('row', $db_module_row);
 
     // Delete all traces of the module...
-    $this->_ee->db->expectCallCount('delete', 2);
+    $this->EE->db->expectCallCount('delete', 2);
 
     // Delete the module member groups.
-    $this->_ee->db->expectAt(0, 'delete', array('module_member_groups',
+    $this->EE->db->expectAt(0, 'delete', array('module_member_groups',
       array('module_id' => $db_module_row->module_id)));
 
     // Delete the module.
-    $this->_ee->db->expectAt(1, 'delete', array('modules',
+    $this->EE->db->expectAt(1, 'delete', array('modules',
       array('module_name' => $module_name)));
 
     // Drop the module tables.
-    $this->_ee->load->expectOnce('dbforge');
-    $this->_ee->dbforge->expectOnce('drop_table', array('supersticky_entries'));
+    $this->EE->load->expectOnce('dbforge');
+    $this->EE->dbforge->expectOnce('drop_table', array('supersticky_entries'));
 
     // Delete any saved layout tabs.
-    $this->_ee->load->expectOnce('library', array('layout'));
-    $this->_ee->layout->expectOnce('delete_layout_tabs');
+    $this->EE->load->expectOnce('library', array('layout'));
+    $this->EE->layout->expectOnce('delete_layout_tabs');
 
     $this->assertIdentical(TRUE, $this->_subject->uninstall_module());
   }
@@ -785,13 +785,13 @@ class Test_supersticky_model extends Testee_unit_test_case {
   {
     $db_module_result = $this->_get_mock('db_query');
 
-    $this->_ee->db->expectOnce('select');
-    $this->_ee->db->expectOnce('get_where');
-    $this->_ee->db->expectNever('delete');
-    $this->_ee->load->expectNever('dbforge');
-    $this->_ee->load->expectNever('library');
+    $this->EE->db->expectOnce('select');
+    $this->EE->db->expectOnce('get_where');
+    $this->EE->db->expectNever('delete');
+    $this->EE->load->expectNever('dbforge');
+    $this->EE->load->expectNever('library');
 
-    $this->_ee->db->setReturnReference('get_where', $db_module_result);
+    $this->EE->db->setReturnReference('get_where', $db_module_result);
     $db_module_result->setReturnValue('num_rows', 0);
 
     $this->assertIdentical(FALSE, $this->_subject->uninstall_module());
@@ -824,7 +824,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__update_supersticky_entry_with_post_data__preserves_existing_criteria()
   {
-    $in = $this->_ee->input;
+    $in = $this->EE->input;
 
     $entry_id = 100;
 
@@ -891,7 +891,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__update_supersticky_entry_with_post_data__ignores_criteria_with_missing_data()
   {
-    $in = $this->_ee->input;
+    $in = $this->EE->input;
 
     $entry_id = 100;
 
@@ -963,7 +963,7 @@ class Test_supersticky_model extends Testee_unit_test_case {
 
   public function test__update_supersticky_entry_with_post_data__ignores_criteria_with_invalid_data()
   {
-    $in = $this->_ee->input;
+    $in = $this->EE->input;
 
     $entry_id = 100;
 

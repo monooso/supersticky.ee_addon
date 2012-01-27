@@ -9,7 +9,19 @@
 (function($) {
 
   $(document).ready(function() {
-    var $wrapper = $('#supersticky_ft');
+    var $wrapper      = $('#supersticky_ft'),
+        criterionOpts = {
+          addRowClass     : 'criterion_add_row',
+          removeRowClass  : 'criterion_remove_row',
+          rowClass        : 'criterion_row'
+        },
+        memberOpts    = {
+          autoUpdateIndexes : false,
+          addRowClass     : 'member_group_add_row',
+          removeRowClass  : 'member_group_remove_row',
+          rowClass        : 'member_group_row'
+        };
+
 
     /**
      * Initialises a single criterion.
@@ -18,21 +30,17 @@
      * @return  void
      */
     function iniCriterion() {
-      // Initialise the 'member groups' Roland within the criterion row.
-      var $criterion  = $(this),
-          options     = {
-            addRowClass     : 'member_group_add_row',
-            removeRowClass  : 'member_group_remove_row',
-            rowClass        : 'member_group_row'
-          };
+      var $criterion = $(this);
 
+      // Remove extraneous member group rows.
       $criterion.find('.member_group_row').slice(1).remove();
 
-      $.fn.roland.updateIndexes(
-        $criterion.find('.member_group_roland'), options);
+      // Remove click handlers.
+      $criterion.find('.member_group_add_row').unbind('click');
+      $criterion.find('.member_group_remove_row').unbind('click');
 
-      $.fn.roland.updateNav(
-        $criterion.find('.member_group_roland'), options);
+      // Re-Roland the member groups.
+      $criterion.find('.member_group_roland').roland(memberOpts);
     };
 
 
@@ -82,29 +90,16 @@
      */
     function iniRoland() {
       $wrapper.find('.criterion_roland')
-        .roland({
-          addRowClass     : 'criterion_add_row',
-          removeRowClass  : 'criterion_remove_row',
-          rowClass        : 'criterion_row'
+        .roland(criterionOpts)
+        .bind('postAddRow', function(event, eventData) {
+          iniCriterion.apply(eventData.newRow[0]);
+          iniDatePickers.apply(eventData.newRow[0]);
         })
-        .find('.criterion_row').each(function() {
-          var $iniRow = $(this);
-          
+        .find('.' + criterionOpts.rowClass).each(function() {
           iniDatePickers.apply(this);
-
-          $iniRow.find('.criterion_add_row')
-            .bind('postAddRow', function(event, eventData) {
-              iniCriterion.apply(eventData.newRow[0]);
-              iniDatePickers.apply(eventData.newRow[0]);
-            });
         });
 
-      $wrapper.find('.member_group_roland')
-        .roland({
-          addRowClass     : 'member_group_add_row',
-          removeRowClass  : 'member_group_remove_row',
-          rowClass        : 'member_group_row'
-        });
+      $wrapper.find('.member_group_roland').roland(memberOpts);
     };
 
 
