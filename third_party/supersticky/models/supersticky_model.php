@@ -6,7 +6,7 @@
  * @author          Stephen Lewis (http://github.com/experience/)
  * @copyright       Experience Internet
  * @package         Supersticky
- * @version         0.9.0
+ * @version         0.9.1
  */
 
 require_once PATH_THIRD .'supersticky/classes/supersticky_entry.php';
@@ -33,9 +33,7 @@ class Supersticky_model extends CI_Model {
    * @param   string    $namespace        Session namespace. Used for testing.
    * @return  void
    */
-  public function __construct(
-    $package_name = '',
-    $package_version = '',
+  public function __construct($package_name = '', $package_version = '',
     $namespace = ''
   )
   {
@@ -50,7 +48,7 @@ class Supersticky_model extends CI_Model {
       ? strtolower($package_name) : 'supersticky';
 
     $this->_package_version = $package_version
-      ? $package_version : '0.9.0';
+      ? $package_version : '0.9.1';
 
     // Initialise the add-on cache.
     if ( ! array_key_exists($this->_namespace, $this->EE->session->cache))
