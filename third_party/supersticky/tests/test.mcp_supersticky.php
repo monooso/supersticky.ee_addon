@@ -32,8 +32,8 @@ class Test_supersticky_mcp extends Testee_unit_test_case {
         parent::setUp();
         
         Mock::generate('Mock_supersticky_model', get_class($this) .'_mock_model');
-        $this->_ee->supersticky_model = $this->_get_mock('model');
-        $this->_model   = $this->_ee->supersticky_model;
+        $this->EE->supersticky_model = $this->_get_mock('model');
+        $this->_model   = $this->EE->supersticky_model;
         $this->_subject = new Supersticky_mcp();
     }
     
