@@ -70,10 +70,35 @@ class Supersticky_ft extends EE_Fieldtype {
     $this->EE->cp->add_to_head('<link rel="stylesheet" href="'
       .$theme_url .'css/cp.css" />');
 
-    // Construct the view variables.
-    $entry = valid_int($saved_data, 1)
-      ? $this->_model->get_supersticky_entry_by_id($saved_data)
-      : FALSE;
+    if (($post_criteria = $this->EE->input->post('supersticky_criteria', TRUE))
+      && is_array($post_criteria)
+    )
+    {
+      /**
+       * We're dealing with a failed save. This is typically called by a required 
+       * field being left blank.
+       */
+
+      $entry = new Supersticky_entry();
+
+      foreach ($post_criteria AS $post_criterion)
+      {
+        $criterion = new Supersticky_criterion(array(
+          'date_from'     => date_create($post_criterion['date_from']),
+          'date_to'       => date_create($post_criterion['date_to']),
+          'member_groups' => $post_criterion['member_groups']
+        ));
+
+        $entry->add_criterion($criterion);
+      }
+    }
+    else
+    {
+      // First time caller, or previously-saved entry?
+      $entry = valid_int($saved_data, 1)
+        ? $this->_model->get_supersticky_entry_by_id($saved_data)
+        : FALSE;
+    }
 
     $view_vars = array(
       'entry'         => $entry,
